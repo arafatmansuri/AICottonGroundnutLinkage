@@ -8,6 +8,7 @@ import fs from 'fs';
 
 import config from './config';
 import { connectDatabase } from './database/client';
+import prismaClient from './database/client';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import logger from './utils/logger';
@@ -65,6 +66,16 @@ app.get('/health', (_req, res) => {
     environment: config.nodeEnv,
     aiProvider: process.env.AI_PROVIDER || 'MOCK',
   });
+});
+
+// ─── Readiness check (DB liveness) ───────────────────────────────────────────
+app.get('/ready', async (_req, res) => {
+  try {
+    await prismaClient.$queryRaw`SELECT 1`;
+    res.json({ status: 'ready', timestamp: new Date().toISOString(), database: 'connected' });
+  } catch {
+    res.status(503).json({ status: 'not_ready', timestamp: new Date().toISOString(), database: 'disconnected' });
+  }
 });
 
 // ─── API Routes ───────────────────────────────────────────────────────────────

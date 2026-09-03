@@ -21,8 +21,11 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const input = validate(transactionSchema, req.body);
+    // Support idempotency key from header to prevent double-submit
+    const idempotencyKey = req.headers['idempotency-key'] as string | undefined;
     const data = await transactionService.createTransaction({
       farmerUserId: req.user!.id,
+      idempotencyKey,
       ...input,
     });
     res.status(201).json({ success: true, data, message: 'Transaction initiated' });

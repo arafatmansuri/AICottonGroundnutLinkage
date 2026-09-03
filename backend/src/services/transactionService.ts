@@ -1,5 +1,6 @@
 import prisma from '../database/client';
 import { BusinessLogicError, NotFoundError } from '../middleware/errorHandler';
+import logger from '../utils/logger';
 
 type TransactionStatus = 'OFFER_CREATED' | 'OFFER_SENT' | 'ACCEPTED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'DISPUTED';
 
@@ -21,12 +22,60 @@ function canTransition(from: TransactionStatus, to: TransactionStatus): boolean 
   return VALID_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
+// ─── Audit log helper ─────────────────────────────────────────────────────────
+async function createAuditLog(params: {
+  userId: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  details?: object;
+  ipAddress?: string;
+}) {
+  try {
+    await prisma.auditLog.create({ data: params });
+  } catch (err) {
+    logger.error('Failed to write audit log:', err);
+  }
+}
+
+// ─── Notification helper ──────────────────────────────────────────────────────
+async function sendTransactionNotification(params: {
+  targetUserId: string;
+  title: string;
+  message: string;
+  type?: string;
+  transactionId?: string;
+}) {
+  try {
+    await prisma.notification.create({
+      data: {
+        userId: params.targetUserId,
+        title: params.title,
+        message: params.message,
+        type: (params.type || 'TRANSACTION_UPDATE') as any,
+        data: params.transactionId ? { transactionId: params.transactionId } : {},
+      },
+    });
+  } catch (err) {
+    logger.error('Failed to send notification:', err);
+  }
+}
+
 export async function createTransaction(input: {
   farmerUserId: string;
   buyerOfferId: string;
   farmerCropId: string;
   quantity: number;
+  idempotencyKey?: string;
 }) {
+  // Idempotency: return existing transaction for same key
+  if (input.idempotencyKey) {
+    const existing = await prisma.transaction.findFirst({
+      where: { idempotencyKey: input.idempotencyKey },
+    });
+    if (existing) return existing;
+  }
+
   return prisma.$transaction(async (tx: any) => {
     // Get farmer profile
     const farmerProfile = await tx.farmerProfile.findUnique({
@@ -34,23 +83,24 @@ export async function createTransaction(input: {
     });
     if (!farmerProfile) throw new NotFoundError('Farmer profile');
 
-    // Get farmer crop with lock
+    // Ownership check: crop must belong to this farmer
     const farmerCrop = await tx.farmerCrop.findFirst({
       where: { id: input.farmerCropId, farmerProfileId: farmerProfile.id, isActive: true },
     });
     if (!farmerCrop) throw new NotFoundError('Farmer crop');
+
+    if (input.quantity <= 0) throw new BusinessLogicError('Quantity must be positive');
     if (farmerCrop.availableQuantity < input.quantity) {
       throw new BusinessLogicError(
         `Insufficient quantity. Available: ${farmerCrop.availableQuantity}, Requested: ${input.quantity}`,
         'INSUFFICIENT_QUANTITY'
       );
     }
-    if (input.quantity <= 0) throw new BusinessLogicError('Quantity must be positive');
 
     // Get buyer offer
     const buyerOffer = await tx.buyerOffer.findFirst({
       where: { id: input.buyerOfferId, isActive: true },
-      include: { buyerProfile: true },
+      include: { buyerProfile: { include: { user: true } } },
     });
     if (!buyerOffer) throw new NotFoundError('Buyer offer');
     if (input.quantity < buyerOffer.minQuantity || input.quantity > buyerOffer.maxQuantity) {
@@ -61,10 +111,14 @@ export async function createTransaction(input: {
     }
 
     // Calculate transport and net realization
-    const transportCost = calculateTransportCost(farmerCrop.district, buyerOffer.district, input.quantity);
+    const transportCost = calculateTransportCost(
+      (farmerProfile as any).district || 'Ahmedabad',
+      buyerOffer.district,
+      input.quantity
+    );
     const netRealization = buyerOffer.offeredPrice - transportCost / input.quantity;
 
-    // Create transaction
+    // Create transaction — status starts as OFFER_SENT (farmer has sent to buyer)
     const transaction = await tx.transaction.create({
       data: {
         farmerProfileId: farmerProfile.id,
@@ -75,17 +129,60 @@ export async function createTransaction(input: {
         agreedPrice: buyerOffer.offeredPrice,
         transportCost,
         netRealization,
-        status: 'OFFER_CREATED',
-        statusHistory: [{ status: 'OFFER_CREATED', timestamp: new Date().toISOString() }],
+        status: 'OFFER_SENT',
+        statusHistory: [
+          { status: 'OFFER_CREATED', timestamp: new Date().toISOString() },
+          { status: 'OFFER_SENT', timestamp: new Date().toISOString(), by: input.farmerUserId },
+        ],
+        idempotencyKey: input.idempotencyKey,
       },
     });
 
-    // Reserve inventory
+    // Reserve inventory atomically
     await tx.farmerCrop.update({
       where: { id: input.farmerCropId },
-      data: {
-        availableQuantity: farmerCrop.availableQuantity - input.quantity,
-      },
+      data: { availableQuantity: farmerCrop.availableQuantity - input.quantity },
+    });
+
+    // Audit log
+    await createAuditLog({
+      userId: input.farmerUserId,
+      action: 'CREATE',
+      entityType: 'TRANSACTION',
+      entityId: transaction.id,
+      details: { quantity: input.quantity, buyerOfferId: input.buyerOfferId, status: 'OFFER_SENT' },
+    });
+
+    return transaction;
+  }).then(async (transaction) => {
+    // Post-transaction notifications (outside the atomic transaction to avoid holding the lock)
+    const buyerOffer = await prisma.buyerOffer.findUnique({
+      where: { id: input.buyerOfferId },
+      include: { buyerProfile: { include: { user: true } } },
+    });
+    const farmerCrop = await prisma.farmerCrop.findUnique({
+      where: { id: input.farmerCropId },
+      include: { crop: true },
+    });
+    const cropName = (farmerCrop as any)?.crop?.name || 'Crop';
+    const qty = input.quantity;
+
+    if (buyerOffer?.buyerProfile?.userId) {
+      await sendTransactionNotification({
+        targetUserId: buyerOffer.buyerProfile.userId,
+        title: 'New Purchase Offer Received',
+        message: `A farmer has sent you a purchase offer for ${qty} qtl of ${cropName}.`,
+        type: 'TRANSACTION_UPDATE',
+        transactionId: transaction.id,
+      });
+    }
+
+    await sendTransactionNotification({
+      targetUserId: input.farmerUserId,
+      title: 'Offer Sent to Buyer',
+      message: `Your offer for ${qty} qtl of ${cropName} has been sent to the buyer.`,
+      type: 'TRANSACTION_UPDATE',
+      transactionId: transaction.id,
     });
 
     return transaction;
@@ -101,11 +198,15 @@ export async function updateTransactionStatus(
   return prisma.$transaction(async (tx: any) => {
     const transaction = await tx.transaction.findUnique({
       where: { id: transactionId },
-      include: { farmerProfile: true, buyerProfile: true },
+      include: {
+        farmerProfile: { include: { user: true } },
+        buyerProfile: { include: { user: true } },
+        farmerCrop: { include: { crop: true } },
+      },
     });
     if (!transaction) throw new NotFoundError('Transaction');
 
-    // Role-based permission checks
+    // Ownership checks
     if (userRole === 'FARMER' && transaction.farmerProfile.userId !== userId) {
       throw new BusinessLogicError('Not authorized to update this transaction');
     }
@@ -132,13 +233,11 @@ export async function updateTransactionStatus(
       },
     });
 
-    // If completed, finalize inventory
+    // Finalize inventory on completion
     if (newStatus === 'COMPLETED') {
       await tx.farmerCrop.update({
         where: { id: transaction.farmerCropId },
-        data: {
-          soldQuantity: { increment: transaction.quantity },
-        },
+        data: { soldQuantity: { increment: transaction.quantity } },
       });
       await tx.buyerProfile.update({
         where: { id: transaction.buyerProfileId },
@@ -146,12 +245,83 @@ export async function updateTransactionStatus(
       });
     }
 
-    // If cancelled/rejected, release inventory
+    // Release inventory on cancel/reject
     if (newStatus === 'CANCELLED' || newStatus === 'REJECTED') {
       if (transaction.status !== 'COMPLETED') {
         await tx.farmerCrop.update({
           where: { id: transaction.farmerCropId },
           data: { availableQuantity: { increment: transaction.quantity } },
+        });
+      }
+    }
+
+    return { updatedTx, transaction };
+  }).then(async ({ updatedTx, transaction }) => {
+    const cropName = transaction.farmerCrop?.crop?.name || 'crop';
+    const qty = transaction.quantity;
+
+    // Audit log
+    await createAuditLog({
+      userId,
+      action: 'STATUS_CHANGE',
+      entityType: 'TRANSACTION',
+      entityId: transactionId,
+      details: { from: transaction.status, to: newStatus },
+    });
+
+    // Notify both parties on state change
+    const farmerUserId = transaction.farmerProfile?.userId;
+    const buyerUserId = transaction.buyerProfile?.userId;
+
+    const messages: Record<string, { title: string; message: string }> = {
+      ACCEPTED: {
+        title: 'Offer Accepted!',
+        message: `Buyer accepted your offer for ${qty} qtl of ${cropName}.`,
+      },
+      REJECTED: {
+        title: 'Offer Rejected',
+        message: `Your offer for ${qty} qtl of ${cropName} was rejected by the buyer.`,
+      },
+      CONFIRMED: {
+        title: 'Purchase Confirmed',
+        message: `Transaction for ${qty} qtl of ${cropName} is now confirmed.`,
+      },
+      IN_PROGRESS: {
+        title: 'Transaction In Progress',
+        message: `Dispatch/pickup for ${qty} qtl of ${cropName} is in progress.`,
+      },
+      COMPLETED: {
+        title: '🎉 Transaction Completed',
+        message: `Transaction for ${qty} qtl of ${cropName} completed successfully.`,
+      },
+      CANCELLED: {
+        title: 'Transaction Cancelled',
+        message: `Transaction for ${qty} qtl of ${cropName} has been cancelled.`,
+      },
+      DISPUTED: {
+        title: 'Dispute Raised',
+        message: `A dispute has been raised for the ${cropName} transaction.`,
+      },
+    };
+
+    const notif = messages[newStatus];
+    if (notif) {
+      if (farmerUserId) {
+        await sendTransactionNotification({
+          targetUserId: farmerUserId,
+          title: notif.title,
+          message: notif.message,
+          type: newStatus === 'COMPLETED' ? 'PAYMENT_RECEIVED' : 'TRANSACTION_UPDATE',
+          transactionId,
+        });
+      }
+      if (buyerUserId) {
+        await sendTransactionNotification({
+          targetUserId: buyerUserId,
+          title: notif.title,
+          message: notif.message,
+          type: newStatus === 'COMPLETED' ? 'PAYMENT_RECEIVED' : 'TRANSACTION_UPDATE',
+          transactionId,
         });
       }
     }
@@ -199,9 +369,8 @@ export async function getTransactions(userId: string, role: string, params: {
   return { transactions, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
-// Simple distance-based transport cost calculation
+// Distance-based transport cost calculation
 function calculateTransportCost(fromDistrict: string, toDistrict: string, quantity: number): number {
-  // Mock distance table for Gujarat mandis
   const distanceMap: Record<string, Record<string, number>> = {
     Ahmedabad: { Rajkot: 216, Surendranagar: 125, Bhavnagar: 170, Anand: 70, Ahmedabad: 0 },
     Rajkot: { Ahmedabad: 216, Surendranagar: 100, Bhavnagar: 160, Rajkot: 0 },
@@ -211,9 +380,9 @@ function calculateTransportCost(fromDistrict: string, toDistrict: string, quanti
   };
 
   const dist = distanceMap[fromDistrict]?.[toDistrict] ??
-    distanceMap[toDistrict]?.[fromDistrict] ?? 150; // default 150km
+    distanceMap[toDistrict]?.[fromDistrict] ?? 150;
 
-  const ratePerKmPerQuintal = 2; // ₹2/km/quintal
+  const ratePerKmPerQuintal = 2;
   return dist * ratePerKmPerQuintal * quantity;
 }
 

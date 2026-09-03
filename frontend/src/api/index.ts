@@ -45,7 +45,13 @@ export const buyerApi = {
 // Transactions
 export const transactionApi = {
   getAll: (params: any) => api.get('/transactions', { params }),
-  create: (data: any) => api.post('/transactions', data),
+  create: (data: any) => {
+    // Generate a client-side idempotency key to prevent double-submit
+    const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return api.post('/transactions', data, {
+      headers: { 'idempotency-key': idempotencyKey },
+    });
+  },
   updateStatus: (id: string, status: string) => api.patch(`/transactions/${id}/status`, { status }),
 };
 
@@ -73,11 +79,16 @@ export const notificationApi = {
 export const adminApi = {
   getStats: () => api.get('/admin/stats'),
   getFarmers: (params: any) => api.get('/admin/farmers', { params }),
+  updateFarmerStatus: (id: string, status: string) => api.patch(`/admin/farmers/${id}/status`, { status }),
   getBuyers: (params: any) => api.get('/admin/buyers', { params }),
   verifyBuyer: (id: string, status: string, notes?: string) =>
     api.patch(`/admin/buyers/${id}/verify`, { status, notes }),
   getTransactions: (params: any) => api.get('/admin/transactions', { params }),
+  resolveDispute: (id: string, action: string) => api.patch(`/admin/transactions/${id}/resolve`, { action }),
   getAiMonitoring: () => api.get('/admin/ai-monitoring'),
   getAuditLogs: (params: any) => api.get('/admin/audit-logs', { params }),
   addMarketPrice: (data: any) => api.post('/admin/market-prices', data),
+  getSettings: () => api.get('/admin/settings'),
+  updateSettings: (data: any) => api.put('/admin/settings', data),
+  getSystemHealth: () => api.get('/admin/system-health'),
 };

@@ -4,7 +4,7 @@ import { marketApi } from '../../api';
 import { CardSkeleton } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/StateComponents';
 import { formatCurrency, getTrendColor, getTrendIcon, formatDate } from '../../utils';
-import { Filter } from 'lucide-react';
+import { Filter, Clock, AlertCircle } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend
@@ -24,9 +24,10 @@ export default function MarketPricesPage() {
     queryFn: () => marketApi.getMandis().then(r => r.data.data),
   });
 
-  const { data: latestPrices, isLoading, error, refetch } = useQuery({
+  const { data: latestPrices, isLoading, error, refetch, dataUpdatedAt } = useQuery({
     queryKey: ['latestPrices', selectedCropId],
     queryFn: () => marketApi.getLatestPrices(selectedCropId || undefined).then(r => r.data.data),
+    refetchInterval: 5 * 60 * 1000, // auto-refresh every 5 min
   });
 
   const { data: priceHistory } = useQuery({
@@ -58,10 +59,21 @@ export default function MarketPricesPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Market Prices</h1>
-        <div className="text-xs text-gray-400 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full border border-amber-200">
-          ⚡ Live market data
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Market Prices</h1>
+          <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" />
+            {dataUpdatedAt ? `Updated ${new Date(dataUpdatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'Loading…'}
+            · Auto-refreshes every 5 min
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full border border-amber-200 flex items-center gap-1.5">
+            <AlertCircle className="w-3.5 h-3.5" />
+            DEMO DATA — Seed prices from mock mandi feed
+          </span>
+          <button onClick={() => refetch()} className="btn-secondary text-xs">Refresh</button>
         </div>
       </div>
 

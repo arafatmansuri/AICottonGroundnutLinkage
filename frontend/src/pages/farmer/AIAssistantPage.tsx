@@ -82,10 +82,13 @@ export default function AIAssistantPage() {
 
   return (
     <div className="max-w-3xl space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-gray-900">{t('ai_assistant', language)}</h1>
-        <div className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-full border border-green-200">
-          Powered by Agentic AI
+        <div className="flex items-center gap-2">
+          <span className="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200 font-medium">MOCK AI</span>
+          <span className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-full border border-green-200">
+            Agentic AI Pipeline
+          </span>
         </div>
       </div>
 

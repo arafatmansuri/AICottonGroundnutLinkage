@@ -59,6 +59,7 @@ enum NotificationType {
   BUYER_MATCH
   MARKET_ALERT
   TRANSACTION_UPDATE
+  PAYMENT_RECEIVED
   AI_RECOMMENDATION
   SYSTEM
 }
@@ -355,6 +356,7 @@ model Transaction {
   status            TransactionStatus @default(OFFER_CREATED)
   statusHistory     Json              @default("[]")
   notes             String?
+  idempotencyKey    String?           @unique
   completedAt       DateTime?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -459,13 +461,16 @@ model AuditLog {
   userId     String?
   user       User?    @relation(fields: [userId], references: [id])
   action     String
-  entity     String
+  entityType String
   entityId   String?
-  changes    Json?
+  details    Json?
   ipAddress  String?
   userAgent  String?
   createdAt  DateTime @default(now())
 
+  @@index([userId])
+  @@index([entityType])
+  @@index([action])
   @@map("audit_logs")
 }
 
