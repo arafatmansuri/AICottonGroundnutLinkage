@@ -118,7 +118,7 @@ export class GraniteAIProvider implements AIProvider {
         }),
       }
     );
-
+    console.log(response);
     if (!response.ok) {
       throw new Error(`Granite API error: ${response.status}`);
     }
