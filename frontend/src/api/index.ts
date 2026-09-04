@@ -87,6 +87,7 @@ export interface AIQueryInput {
   cropId?: string;
   farmerCropId?: string;
   language?: 'en' | 'hi' | 'gu';
+  chatHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
 }
 
 export interface StorageAdvisorInput {
@@ -200,6 +201,16 @@ export const transactionApi = {
 
 // ── AI ────────────────────────────────────────────────────────────────────────
 
+export interface CloudinaryUploadParams {
+  uploadUrl: string;
+  publicId: string;
+  signature: string;
+  apiKey: string;
+  timestamp: number;
+  folder: string;
+  cloudName: string;
+}
+
 export const aiApi = {
   query: (data: AIQueryInput): AR<AIQueryResult> => api.post('/ai/query', data),
   getForecast: (cropId: string, mandiId?: string, days?: number): AR<ForecastResult> =>
@@ -218,8 +229,14 @@ export const aiApi = {
     riskLevel: string;
     confidence: number;
   }> => api.post('/ai/storage-advisor', data),
-  gradeQuality: (formData: FormData): AR<QualityAssessment> =>
-    api.post('/ai/quality-grade', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  /** Step 1: Get a signed Cloudinary upload URL from the backend */
+  getUploadUrl: (): AR<CloudinaryUploadParams> => api.post('/ai/upload-url'),
+  /** Step 3: Delete the image from Cloudinary via backend after grading is done */
+  deleteImage: (publicId: string): AR<null> =>
+    api.delete(`/ai/image/${btoa(publicId)}`),
+  /** Step 2b: Submit the Cloudinary image URL to the backend for AI grading */
+  gradeQuality: (data: { cropType: string; imageUrl?: string; farmerCropId?: string }): AR<QualityAssessment> =>
+    api.post('/ai/quality-grade', data),
   getHistory: (): AR<AIHistoryItem[]> => api.get('/ai/history'),
   getRecommendations: (): AR<AIQueryResult[]> => api.get('/ai/recommendations'),
 };

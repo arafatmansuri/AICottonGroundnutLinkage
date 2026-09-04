@@ -7,25 +7,11 @@ import { storageSellingAdvisorAgent } from '../agents/storageAdvisorAgent';
 import { qualityGradingAgent } from '../agents/qualityGradingAgent';
 import { aiQuerySchema, validate } from '../validators/schemas';
 import prisma from '../database/client';
-import multer from 'multer';
-import path from 'path';
-import config from '../config';
+import { generateSignedUpload, deleteImage } from '../services/cloudinaryService';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
 router.use(authenticate);
-
-const upload = multer({
-  dest: config.upload.dir,
-  limits: { fileSize: config.upload.maxSizeMb * 1024 * 1024 },
-  fileFilter: (_req, file, cb) => {
-    const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
-    if (allowed.includes(path.extname(file.originalname).toLowerCase())) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPG, PNG, WEBP allowed.'));
-    }
-  },
-});
 
 // Main AI assistant endpoint
 router.post('/query', async (req: Request, res: Response, next: NextFunction) => {
@@ -37,6 +23,7 @@ router.post('/query', async (req: Request, res: Response, next: NextFunction) =>
       language: input.language,
       cropId: input.cropId,
       farmerCropId: input.farmerCropId,
+      chatHistory: input.chatHistory,
     });
     res.json({ success: true, data: result });
   } catch (e) { next(e); }
@@ -81,10 +68,33 @@ router.post('/storage-advisor', async (req: Request, res: Response, next: NextFu
   } catch (e) { next(e); }
 });
 
-// Quality grading endpoint (image upload)
-router.post('/quality-grade', upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
+// ── Cloudinary signed-upload URL ────────────────────────────────────────────
+// Returns a signed upload URL + public_id so the frontend can upload directly
+// to Cloudinary without storing the file on this server.
+router.post('/upload-url', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { cropType, farmerCropId } = req.body;
+    const publicId = uuidv4();
+    const params = generateSignedUpload(publicId);
+    res.json({ success: true, data: params });
+  } catch (e) { next(e); }
+});
+
+// ── Delete a Cloudinary image by public_id ──────────────────────────────────
+router.delete('/image/:publicId', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // publicId in the URL is base64-encoded to safely carry slashes
+    const publicId = Buffer.from(req.params.publicId, 'base64').toString('utf8');
+    await deleteImage(publicId);
+    res.json({ success: true });
+  } catch (e) { next(e); }
+});
+
+// ── Quality grading endpoint (image URL from Cloudinary) ────────────────────
+// The frontend uploads the image to Cloudinary directly, then passes the
+// secure_url here. No file is stored on this server.
+router.post('/quality-grade', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { cropType, imageUrl, farmerCropId } = req.body;
     if (!cropType) {
       res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'cropType required' } });
       return;
@@ -92,7 +102,7 @@ router.post('/quality-grade', upload.single('image'), async (req: Request, res: 
 
     const result = await qualityGradingAgent.execute({
       cropType,
-      imagePath: req.file?.path,
+      imageUrl: imageUrl as string | undefined,
     });
 
     // Save assessment if farmerCropId provided
@@ -105,7 +115,7 @@ router.post('/quality-grade', upload.single('image'), async (req: Request, res: 
           priceRangeMin: result.estimatedPriceRange.min,
           priceRangeMax: result.estimatedPriceRange.max,
           observations: result.observations,
-          imageUrl: req.file ? `/uploads/${req.file.filename}` : undefined,
+          imageUrl: imageUrl ?? undefined,
           warning: result.warning,
         },
       });

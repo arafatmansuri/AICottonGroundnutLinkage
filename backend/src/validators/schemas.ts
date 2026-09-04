@@ -56,11 +56,17 @@ export const transactionSchema = z.object({
   quantity: z.number().positive(),
 });
 
+export const conversationTurnSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string().max(2000),
+});
+
 export const aiQuerySchema = z.object({
   query: z.string().min(1, 'Query is required').max(500),
   cropId: z.string().uuid().optional(),
   farmerCropId: z.string().uuid().optional(),
   language: z.enum(['en', 'hi', 'gu']).default('en'),
+  chatHistory: z.array(conversationTurnSchema).max(20).optional(),
 });
 
 export const paginationSchema = z.object({

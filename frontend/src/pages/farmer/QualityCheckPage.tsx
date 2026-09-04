@@ -1,16 +1,57 @@
 import React, { useState, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { aiApi, marketApi } from '../../api';
+import type { CloudinaryUploadParams } from '../../api';
 import { useQuery } from '@tanstack/react-query';
 import { formatCurrency } from '../../utils';
-import { Star, AlertTriangle, Image, Loader2 } from 'lucide-react';
+import { Star, AlertTriangle, Image, Loader2, CloudUpload } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+type UploadStep = 'idle' | 'signing' | 'uploading' | 'analyzing' | 'done' | 'error';
+
+const STEP_LABELS: Record<UploadStep, string> = {
+  idle: '',
+  signing: 'Getting upload credentials…',
+  uploading: 'Uploading image to cloud…',
+  analyzing: 'AI is analyzing crop quality…',
+  done: '',
+  error: '',
+};
+
+/**
+ * Upload the file directly to Cloudinary using the signed parameters
+ * returned by the backend. Returns the secure_url of the uploaded image.
+ */
+async function uploadToCloudinary(
+  file: File,
+  params: CloudinaryUploadParams,
+): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('api_key', params.apiKey);
+  formData.append('timestamp', String(params.timestamp));
+  formData.append('signature', params.signature);
+  formData.append('folder', params.folder);
+  // The public_id sent to Cloudinary must be just the base name (without folder prefix)
+  // because folder is already a separate field.
+  const basePublicId = params.publicId.replace(`${params.folder}/`, '');
+  formData.append('public_id', basePublicId);
+
+  const res = await fetch(params.uploadUrl, { method: 'POST', body: formData });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Cloudinary upload failed: ${text}`);
+  }
+  const data = await res.json() as { secure_url: string };
+  return data.secure_url;
+}
 
 export default function QualityCheckPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [cropType, setCropType] = useState('Cotton');
   const [result, setResult] = useState<any>(null);
+  const [step, setStep] = useState<UploadStep>('idle');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: crops } = useQuery({
@@ -20,16 +61,42 @@ export default function QualityCheckPage() {
 
   const gradeMutation = useMutation({
     mutationFn: async () => {
-      const formData = new FormData();
-      formData.append('cropType', cropType);
-      if (selectedFile) formData.append('image', selectedFile);
-      return aiApi.gradeQuality(formData).then(r => r.data.data);
+      // ── Step 1: Get signed upload credentials from backend ──────────────
+      setStep('signing');
+      const { data: uploadParams } = await aiApi.getUploadUrl().then(r => r.data);
+
+      // ── Step 2a: Upload image directly to Cloudinary from the browser ───
+      setStep('uploading');
+      let imageUrl: string | undefined;
+      if (selectedFile) {
+        imageUrl = await uploadToCloudinary(selectedFile, uploadParams);
+      }
+
+      // ── Step 2b: Ask backend to run AI grading with the image URL ────────
+      setStep('analyzing');
+      const gradeResult = await aiApi
+        .gradeQuality({ cropType, imageUrl })
+        .then(r => r.data.data);
+
+      // ── Step 3: Delete the image from Cloudinary (fire-and-forget) ───────
+      if (imageUrl && uploadParams.publicId) {
+        aiApi.deleteImage(uploadParams.publicId).catch(() => {
+          // Non-fatal — Cloudinary cleanup failure should not surface to user
+        });
+      }
+
+      setStep('done');
+      return gradeResult;
     },
     onSuccess: (data) => {
       setResult(data);
       toast.success('Quality assessment complete!');
     },
-    onError: () => toast.error('Quality assessment failed. Please try again.'),
+    onError: (err) => {
+      setStep('error');
+      console.error(err);
+      toast.error('Quality assessment failed. Please try again.');
+    },
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,6 +109,7 @@ export default function QualityCheckPage() {
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setResult(null);
+    setStep('idle');
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -51,8 +119,18 @@ export default function QualityCheckPage() {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
       setResult(null);
+      setStep('idle');
     }
   };
+
+  const handleClear = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setResult(null);
+    setStep('idle');
+  };
+
+  const isPending = gradeMutation.isPending;
 
   const gradeColors: Record<string, string> = {
     GRADE_A: 'text-green-700 bg-green-100 border-green-300',
@@ -65,8 +143,14 @@ export default function QualityCheckPage() {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">AI Quality Check</h1>
-        <div className="text-xs bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full border border-purple-200">
-          AI Vision Analysis
+        <div className="flex items-center gap-2">
+          <div className="text-xs bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full border border-purple-200">
+            AI Vision Analysis
+          </div>
+          <div className="text-xs bg-sky-50 text-sky-700 px-3 py-1.5 rounded-full border border-sky-200 flex items-center gap-1">
+            <CloudUpload className="w-3 h-3" />
+            Cloudinary
+          </div>
         </div>
       </div>
 
@@ -82,9 +166,13 @@ export default function QualityCheckPage() {
 
         <div
           onDrop={handleDrop} onDragOver={e => e.preventDefault()}
-          onClick={() => fileRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-            previewUrl ? 'border-green-300 bg-green-50/30' : 'border-gray-200 hover:border-green-400 hover:bg-green-50/20'
+          onClick={() => !isPending && fileRef.current?.click()}
+          className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+            isPending
+              ? 'border-purple-200 bg-purple-50/30 cursor-wait'
+              : previewUrl
+                ? 'border-green-300 bg-green-50/30 cursor-pointer'
+                : 'border-gray-200 hover:border-green-400 hover:bg-green-50/20 cursor-pointer'
           }`}
         >
           {previewUrl ? (
@@ -105,21 +193,28 @@ export default function QualityCheckPage() {
         <input ref={fileRef} type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden"
           onChange={handleFileChange} />
 
+        {/* Progress indicator */}
+        {isPending && step !== 'idle' && (
+          <div className="mt-3 flex items-center gap-2 text-sm text-purple-700 bg-purple-50 rounded-lg px-4 py-2.5 border border-purple-100">
+            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+            <span>{STEP_LABELS[step]}</span>
+          </div>
+        )}
+
         <div className="mt-4 flex gap-3">
           <button
             onClick={() => gradeMutation.mutate()}
-            disabled={gradeMutation.isPending}
+            disabled={isPending}
             className="btn-primary flex items-center gap-2 disabled:opacity-50"
           >
-            {gradeMutation.isPending ? (
+            {isPending ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
             ) : (
               <><Star className="w-4 h-4" /> Analyze Quality</>
             )}
           </button>
-          {previewUrl && (
-            <button onClick={() => { setSelectedFile(null); setPreviewUrl(null); setResult(null); }}
-              className="btn-secondary">Clear</button>
+          {previewUrl && !isPending && (
+            <button onClick={handleClear} className="btn-secondary">Clear</button>
           )}
         </div>
       </div>
@@ -195,6 +290,10 @@ export default function QualityCheckPage() {
             </ul>
           </div>
         </div>
+        <p className="mt-3 text-xs text-gray-400">
+          Images are uploaded directly to Cloudinary and automatically deleted after analysis.
+          No image data is stored on our servers.
+        </p>
       </div>
     </div>
   );

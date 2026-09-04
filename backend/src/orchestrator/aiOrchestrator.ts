@@ -17,6 +17,11 @@ import logger from '../utils/logger';
 
 // ── Public input / output contracts ───────────────────────────────────────────
 
+export interface ConversationTurn {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface OrchestratorInput {
   userId: string;
   query: string;
@@ -26,6 +31,8 @@ export interface OrchestratorInput {
   quantity?: number;
   district?: string;
   riskProfile?: string;
+  /** Previous turns to give the model conversation context */
+  chatHistory?: ConversationTurn[];
 }
 
 export type RecommendationDecision = 'SELL_NOW' | 'STORE' | 'SELL_PARTIALLY' | 'WAIT_AND_MONITOR';
@@ -82,6 +89,8 @@ interface FarmerContext {
   quality: string;
   expectedPrice: number | undefined;
   cropName: string;
+  /** All crops from DB — injected into system prompt so the AI can identify crop IDs */
+  allCrops: Array<{ id: string; name: string; nameHi?: string | null; nameGu?: string | null }>;
 }
 
 // ── Tool definitions for Granite ──────────────────────────────────────────────
@@ -302,10 +311,17 @@ export class AIOrchestrator {
 
     // 2. Build system prompt with available context
     const systemPrompt = this.buildSystemPrompt(ctx, input.language ?? 'en');
-    const messages: ChatMessage[] = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: input.query },
-    ];
+    const messages: ChatMessage[] = [{ role: 'system', content: systemPrompt }];
+
+    // Inject previous conversation turns for context (max last 6 turns = 3 exchanges)
+    if (input.chatHistory && input.chatHistory.length > 0) {
+      const historySlice = input.chatHistory.slice(-6);
+      for (const turn of historySlice) {
+        messages.push({ role: turn.role, content: turn.content });
+      }
+    }
+
+    messages.push({ role: 'user', content: input.query });
 
     // 3. ReAct loop — Granite decides which tools to call, we execute them
     let iterations = 0;
@@ -370,6 +386,11 @@ export class AIOrchestrator {
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   private async resolveFarmerContext(input: OrchestratorInput): Promise<FarmerContext> {
+    // Always fetch all crops for system prompt context
+    const allCrops = await prisma.crop.findMany({
+      select: { id: true, name: true, nameHi: true, nameGu: true },
+    });
+
     if (input.farmerCropId) {
       const farmerCrop = await prisma.farmerCrop.findUnique({
         where: { id: input.farmerCropId },
@@ -384,6 +405,7 @@ export class AIOrchestrator {
           quality: farmerCrop.quality,
           expectedPrice: farmerCrop.expectedPrice ?? undefined,
           cropName: farmerCrop.crop.name,
+          allCrops,
         };
       }
     }
@@ -404,27 +426,59 @@ export class AIOrchestrator {
             quality: farmerCrop.quality,
             expectedPrice: farmerCrop.expectedPrice ?? undefined,
             cropName: farmerCrop.crop.name,
+            allCrops,
           };
         }
+        // cropId provided but no active farmer crop — still resolve crop name
+        const crop = await prisma.crop.findUnique({ where: { id: input.cropId } });
+        const fp2 = fp;
+        return {
+          cropId: input.cropId,
+          quantity: input.quantity ?? 100,
+          district: input.district ?? fp2.district,
+          riskProfile: input.riskProfile ?? fp2.riskProfile,
+          quality: 'GRADE_B',
+          expectedPrice: undefined,
+          cropName: crop?.name ?? 'crop',
+          allCrops,
+        };
       }
     }
 
+    // No explicit crop context — try to resolve from query text using chat history
+    const queryText = [
+      ...(input.chatHistory ?? []).map(t => t.content),
+      input.query,
+    ].join(' ').toLowerCase();
+
+    const fp = await prisma.farmerProfile.findUnique({ where: { userId: input.userId } });
+    const matchedCrop = allCrops.find(c =>
+      queryText.includes(c.name.toLowerCase()) ||
+      (c.nameHi && queryText.includes(c.nameHi.toLowerCase())) ||
+      (c.nameGu && queryText.includes(c.nameGu.toLowerCase()))
+    );
+
     return {
-      cropId: input.cropId,
+      cropId: matchedCrop?.id ?? input.cropId,
       quantity: input.quantity ?? 100,
-      district: input.district ?? 'Ahmedabad',
-      riskProfile: input.riskProfile ?? 'MODERATE',
+      district: input.district ?? fp?.district ?? 'Ahmedabad',
+      riskProfile: input.riskProfile ?? fp?.riskProfile ?? 'MODERATE',
       quality: 'GRADE_B',
       expectedPrice: undefined,
-      cropName: 'crop',
+      cropName: matchedCrop?.name ?? 'crop',
+      allCrops,
     };
   }
 
   private buildSystemPrompt(ctx: FarmerContext, language: string): string {
+    const cropCatalog = ctx.allCrops
+      .map(c => `${c.name} (id: ${c.id})`)
+      .join(', ');
     return [
       'You are KisanMitra AI, an expert agricultural market advisor for farmers in Gujarat, India.',
       'You have access to three tools: get_price_forecast, find_buyers, and storage_advisor.',
       'Use them as needed to answer the farmer\'s question. Call multiple tools if the query requires it.',
+      'When the farmer asks about a crop, identify the correct cropId from the crop catalog below and pass it to tools.',
       'After receiving tool results, provide a concise 2-4 sentence farmer-friendly explanation.',
       'NEVER invent prices, buyer names, or quantities not returned by the tools.',
       'Always end with: ★ AI-assisted guidance — not a guaranteed financial outcome.',
@@ -438,6 +492,7 @@ export class AIOrchestrator {
         quality: ctx.quality,
         expectedPrice: ctx.expectedPrice,
       })}`,
+      `Available crops (use exact id values in tool calls): ${cropCatalog}`,
     ].join('\n');
   }
 

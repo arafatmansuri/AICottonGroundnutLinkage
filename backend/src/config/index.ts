@@ -32,6 +32,12 @@ interface Config {
   cors: {
     origin: string;
   };
+  cloudinary: {
+    cloudName: string;
+    apiKey: string;
+    apiSecret: string;
+    uploadFolder: string;
+  };
 }
 
 function requireEnv(key: string): string {
@@ -72,6 +78,12 @@ const config: Config = {
   },
   cors: {
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+    apiKey: process.env.CLOUDINARY_API_KEY || '',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+    uploadFolder: process.env.CLOUDINARY_UPLOAD_FOLDER || 'ailinkage/quality-checks',
   },
 };
 
