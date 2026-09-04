@@ -33,7 +33,7 @@ export default function AdminBuyersPage() {
     onError: () => toast.error('Action failed'),
   });
 
-  const buyers = (data?.buyers || []).filter((b: any) =>
+  const buyers = (data?.data || []).filter((b: any) =>
     !search ||
     b.companyName?.toLowerCase().includes(search.toLowerCase()) ||
     b.contactName?.toLowerCase().includes(search.toLowerCase()) ||
@@ -77,8 +77,8 @@ export default function AdminBuyersPage() {
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
           { label: 'Total Buyers', value: data?.total || 0, color: 'bg-blue-50 text-blue-700' },
-          { label: 'Verified', value: data?.verifiedCount || 0, color: 'bg-green-50 text-green-700' },
-          { label: 'Pending Review', value: data?.pendingCount || 0, color: 'bg-amber-50 text-amber-700' },
+          { label: 'Verified', value: (data?.data || []).filter((b: any) => b.verificationStatus === 'VERIFIED').length, color: 'bg-green-50 text-green-700' },
+          { label: 'Pending Review', value: (data?.data || []).filter((b: any) => b.verificationStatus === 'PENDING').length, color: 'bg-amber-50 text-amber-700' },
         ].map(s => (
           <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
             <p className="text-2xl font-bold">{s.value}</p>
@@ -147,12 +147,12 @@ export default function AdminBuyersPage() {
               )}
             </tbody>
           </table>
-          {data?.totalPages > 1 && (
+          {(data?.totalPages ?? 0) > 1 && (
             <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-              <p className="text-xs text-gray-500">Page {page} of {data.totalPages}</p>
+              <p className="text-xs text-gray-500">Page {page} of {data!.totalPages}</p>
               <div className="flex gap-2">
                 <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="btn-secondary text-xs disabled:opacity-40">Previous</button>
-                <button disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)} className="btn-secondary text-xs disabled:opacity-40">Next</button>
+                <button disabled={page >= data!.totalPages} onClick={() => setPage(p => p + 1)} className="btn-secondary text-xs disabled:opacity-40">Next</button>
               </div>
             </div>
           )}

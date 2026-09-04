@@ -113,11 +113,15 @@ export interface BuyerMatchInput {
 export interface MarketPricesParams {
   cropId?: string;
   mandiId?: string;
+  district?: string;
+  verifiedOnly?: boolean | undefined;
+  minPrice?: string | undefined;
 }
 
 export interface PaginationParams {
   page?: number;
   limit?: number;
+  status?: string;
 }
 
 export interface AIHistoryItem {
@@ -187,14 +191,14 @@ export const buyerApi = {
   createOffer: (data: BuyerOfferInput): AR<BuyerOffer> => api.post('/buyers/offers', data),
   updateOffer: (id: string, data: Partial<BuyerOfferInput>): AR<BuyerOffer> =>
     api.put(`/buyers/offers/${id}`, data),
-  getMarketplace: (params: MarketPricesParams & PaginationParams): AR<BuyerOffer[]> =>
+  getMarketplace: (params: MarketPricesParams & PaginationParams): AR<PaginatedResponse<BuyerOffer>> =>
     api.get('/buyers/marketplace', { params }),
 };
 
 // ── Transactions ──────────────────────────────────────────────────────────────
 
 export const transactionApi = {
-  getAll: (params: PaginationParams): AR<Transaction[]> =>
+  getAll: (params: PaginationParams): AR<PaginatedResponse<Transaction>> =>
     api.get('/transactions', { params }),
   create: (data: TransactionCreateInput): AR<Transaction> => {
     const idempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;

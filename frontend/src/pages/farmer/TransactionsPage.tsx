@@ -40,7 +40,7 @@ export default function TransactionsPage() {
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('transactions_title')}</h1>
-        <span className="text-sm text-gray-500">{data?.total || 0} {t('total')}</span>
+        <span className="text-sm text-gray-500">{data?.total ?? 0} {t('total')}</span>
       </div>
 
       <div className="flex gap-2 flex-wrap">
@@ -54,11 +54,11 @@ export default function TransactionsPage() {
         ))}
       </div>
 
-      {data?.transactions?.length === 0 ? (
+      {data?.data?.length === 0 ? (
         <EmptyState title={t('no_transactions')} description={t('no_transactions_desc')} />
       ) : (
         <div className="space-y-4">
-          {data?.transactions?.map((tx: any) => (
+          {data?.data?.map((tx: any) => (
             <div key={tx.id} className="card hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -120,12 +120,12 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {data?.totalPages > 1 && (
+      {(data?.totalPages ?? 0) > 1 && (
         <div className="flex items-center justify-center gap-2">
           <button disabled={page === 1} onClick={() => setPage((p: number) => p - 1)}
             className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50">{t('previous')}</button>
-          <span className="text-sm text-gray-500">{t('page_of').replace('{0}', String(page)).replace('{1}', String(data.totalPages))}</span>
-          <button disabled={page === data.totalPages} onClick={() => setPage((p: number) => p + 1)}
+          <span className="text-sm text-gray-500">{t('page_of').replace('{0}', String(page)).replace('{1}', String(data!.totalPages))}</span>
+          <button disabled={page === data!.totalPages} onClick={() => setPage((p: number) => p + 1)}
             className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50">{t('next')}</button>
         </div>
       )}

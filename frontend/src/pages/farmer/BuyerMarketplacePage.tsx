@@ -37,7 +37,7 @@ export default function BuyerMarketplacePage() {
     <div className="space-y-6 max-w-5xl">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('buyer_marketplace')}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{offersData?.total || 0} {t('active_offers')}</p>
+        <p className="text-sm text-gray-500 mt-0.5">{offersData?.total ?? 0} {t('active_offers')}</p>
       </div>
 
       {/* Filters */}
@@ -65,11 +65,11 @@ export default function BuyerMarketplacePage() {
       </div>
 
       {/* Offers */}
-      {offersData?.offers?.length === 0 ? (
+      {offersData?.data?.length === 0 ? (
         <EmptyState title={t('no_buyers_match')} description={t('adjust_filters')} />
       ) : (
         <div className="grid gap-4">
-          {offersData?.offers?.map((offer: any) => (
+          {offersData?.data?.map((offer: any) => (
             <div key={offer.id} className="card">
               <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
                 <div className="min-w-0">
@@ -102,12 +102,12 @@ export default function BuyerMarketplacePage() {
       )}
 
       {/* Pagination */}
-      {offersData?.totalPages > 1 && (
+      {(offersData?.totalPages ?? 0) > 1 && (
         <div className="flex items-center justify-center gap-2">
           <button disabled={filters.page === 1} onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
             className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50">{t('previous')}</button>
-          <span className="text-sm text-gray-500">{t('page_of').replace('{0}', String(filters.page)).replace('{1}', String(offersData.totalPages))}</span>
-          <button disabled={filters.page === offersData.totalPages}
+          <span className="text-sm text-gray-500">{t('page_of').replace('{0}', String(filters.page)).replace('{1}', String(offersData!.totalPages))}</span>
+          <button disabled={filters.page === offersData!.totalPages}
             onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
             className="btn-secondary px-3 py-1.5 text-sm disabled:opacity-50">{t('next')}</button>
         </div>

@@ -144,7 +144,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {buyersData?.buyers?.map((b: any) => (
+                  {buyersData?.data?.map((b: any) => (
                     <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50">
                       <td className="py-3 px-4 font-medium text-gray-800 whitespace-nowrap">{b.companyName}</td>
                       <td className="py-3 px-4 text-gray-600 whitespace-nowrap">{b.contactName}</td>
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {farmersData?.farmers?.map((f: any) => (
+                {farmersData?.data?.map((f: any) => (
                   <tr key={f.id} className="border-b border-gray-50 hover:bg-gray-50">
                     <td className="py-3 px-4 font-medium whitespace-nowrap">{f.name}</td>
                     <td className="py-3 px-4 text-gray-600 whitespace-nowrap">{f.district}</td>

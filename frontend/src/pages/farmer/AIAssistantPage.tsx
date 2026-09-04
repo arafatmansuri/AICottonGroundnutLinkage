@@ -588,7 +588,7 @@ export default function AIAssistantPage() {
     <div className="max-w-3xl space-y-4">
       {/* Header */}
       <div className="flex items-start sm:items-center justify-between flex-wrap gap-3">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('ai_assistant', language)}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('ai_assistant')}</h1>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full border border-purple-200 font-medium">
             Agentic AI — ReAct Loop
@@ -694,7 +694,7 @@ export default function AIAssistantPage() {
           <input
             type="text"
             className="input flex-1 text-sm min-w-0"
-            placeholder={t('type_message', language)}
+            placeholder={t('type_message')}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}

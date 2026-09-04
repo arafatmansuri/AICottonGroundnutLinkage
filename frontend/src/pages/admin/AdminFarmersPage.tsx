@@ -26,7 +26,7 @@ export default function AdminFarmersPage() {
     onError: () => toast.error('Action failed'),
   });
 
-  const farmers = (data?.farmers || []).filter((f: any) =>
+  const farmers = (data?.data || []).filter((f: any) =>
     !search ||
     f.name?.toLowerCase().includes(search.toLowerCase()) ||
     f.district?.toLowerCase().includes(search.toLowerCase()) ||
@@ -120,12 +120,12 @@ export default function AdminFarmersPage() {
             </tbody>
           </table>
           {/* Pagination */}
-          {data?.totalPages > 1 && (
+          {(data?.totalPages ?? 0) > 1 && (
             <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-              <p className="text-xs text-gray-500">Page {page} of {data.totalPages}</p>
+              <p className="text-xs text-gray-500">Page {page} of {data!.totalPages}</p>
               <div className="flex gap-2">
                 <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="btn-secondary text-xs disabled:opacity-40">Previous</button>
-                <button disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)} className="btn-secondary text-xs disabled:opacity-40">Next</button>
+                <button disabled={page >= data!.totalPages} onClick={() => setPage(p => p + 1)} className="btn-secondary text-xs disabled:opacity-40">Next</button>
               </div>
             </div>
           )}

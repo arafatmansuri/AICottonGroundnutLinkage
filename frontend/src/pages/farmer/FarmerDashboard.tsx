@@ -89,7 +89,7 @@ export default function FarmerDashboard() {
           <div className="card">
             <p className="text-xs text-gray-500 mb-1">{t('net_income_earned')}</p>
             <p className="text-xl font-bold text-green-700">{formatCurrency(incomeData.totalNetIncome || 0)}</p>
-            <p className="text-xs text-gray-400 mt-1">{t('from_transactions').replace('{0}', incomeData.transactionCount)}</p>
+            <p className="text-xs text-gray-400 mt-1">{t('from_transactions').replace('{0}', String((incomeData as any).transactionCount ?? 0))}</p>
           </div>
         </div>
       )}
@@ -166,8 +166,8 @@ export default function FarmerDashboard() {
                 <Bot className="w-5 h-5 text-green-600" />
                 <h2 className="font-semibold text-gray-900">{t('ai_recommendation')}</h2>
               </div>
-              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold mb-2 ${getDecisionColor(latestRec.decision)}`}>
-                {getDecisionLabel(latestRec.decision)}
+              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold mb-2 ${getDecisionColor(latestRec.recommendation?.decision ?? '')}`}>
+                {getDecisionLabel(latestRec.recommendation?.decision ?? '')}
               </div>
               <p className="text-gray-600 text-xs leading-relaxed">{latestRec.explanation?.slice(0, 140)}...</p>
               <Link to="/farmer/ai-assistant" className="text-green-600 text-xs font-medium mt-2 flex items-center gap-1 hover:underline">

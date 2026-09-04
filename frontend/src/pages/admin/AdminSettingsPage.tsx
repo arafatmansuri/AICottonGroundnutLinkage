@@ -15,7 +15,7 @@ export default function AdminSettingsPage() {
 
   const { data: healthData } = useQuery({
     queryKey: ['systemHealth'],
-    queryFn: () => adminApi.getSystemHealth().then(r => r.data),
+    queryFn: () => adminApi.getSystemHealth().then(r => r.data.data),
     refetchInterval: 10_000,
   });
 
@@ -211,8 +211,8 @@ export default function AdminSettingsPage() {
               <div className="space-y-3">
                 {[
                   { label: 'API Server', status: 'Operational', detail: 'Express 4.x · Port 5000', ok: true },
-                  { label: 'Database', status: healthData?.database === 'ok' ? 'Connected' : 'Disconnected', detail: 'PostgreSQL · Prisma ORM', ok: healthData?.database === 'ok' },
-                  { label: 'AI Provider', status: (healthData?.aiProvider || 'MOCK') + ' Mode', detail: healthData?.aiProvider === 'GRANITE' ? 'IBM watsonx connected' : 'Mock responses active', ok: true },
+                  { label: 'Database', status: (healthData as any)?.database === 'ok' ? 'Connected' : 'Disconnected', detail: 'PostgreSQL · Prisma ORM', ok: (healthData as any)?.database === 'ok' },
+                  { label: 'AI Provider', status: ((healthData as any)?.aiProvider || 'MOCK') + ' Mode', detail: (healthData as any)?.aiProvider === 'GRANITE' ? 'IBM watsonx connected' : 'Mock responses active', ok: true },
                   { label: 'File Storage', status: 'Local Disk', detail: 'uploads/ directory', ok: true },
                   { label: 'Rate Limiting', status: 'Active', detail: '300 req/15min general, 20 auth', ok: true },
                   { label: 'JWT Auth', status: 'Active', detail: 'Access 15m · Refresh 7d', ok: true },

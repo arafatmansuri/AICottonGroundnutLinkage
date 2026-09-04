@@ -64,7 +64,7 @@ export default function FarmerProfilePage() {
     e.preventDefault();
     setProfileSaving(true);
     try {
-      const { data } = await farmerApi.updateProfile(profile as any);
+      await farmerApi.updateProfile(profile as any);
       toast.success('Profile updated successfully');
       // Update name in auth store if it changed
       if (user && profile.name && profile.name !== user.name) {

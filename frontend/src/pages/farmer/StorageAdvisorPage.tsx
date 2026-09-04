@@ -120,7 +120,7 @@ export default function StorageAdvisorPage() {
                 </div>
               </div>
               <p className="text-sm text-gray-600 bg-blue-50 rounded-xl px-4 py-3">{forecast.explanation}</p>
-              <p className="text-xs text-gray-400 mt-2">{t('data_points').replace('{0}', forecast.dataPoints)}</p>
+              <p className="text-xs text-gray-400 mt-2">{t('data_points').replace('{0}', String(forecast.dataPoints))}</p>
             </div>
           )}
 
