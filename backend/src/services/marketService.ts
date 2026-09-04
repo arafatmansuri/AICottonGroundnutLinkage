@@ -53,7 +53,7 @@ export async function getMarketPrices(params: {
 }
 
 export async function getLatestMarketPrices(cropId?: string) {
-  const where: any = {};
+  const where: {cropId?: string} = {};
   if (cropId) where.cropId = cropId;
 
   // Get latest price per mandi+crop combo

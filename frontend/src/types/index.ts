@@ -130,42 +130,24 @@ export interface Notification {
   createdAt: string;
 }
 
+export type PriceTrend = 'INCREASING' | 'DECREASING' | 'STABLE' | 'VOLATILE';
+export type PriceSignal = 'SELL_NOW' | 'SELL_PARTIALLY' | 'WAIT' | 'STORE';
+export type RecommendationDecision = 'SELL_NOW' | 'STORE' | 'SELL_PARTIALLY' | 'WAIT_AND_MONITOR';
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH';
+export type BetterOption = 'BUYER' | 'MANDI';
+
 export interface ForecastResult {
+  agentName: string;
+  success: boolean;
+  confidence: number;
+  executionMs: number;
   currentPrice: number;
   forecastRange: { min: number; max: number };
-  trend: string;
-  signal: string;
-  confidence: number;
+  trend: PriceTrend;
+  signal: PriceSignal;
   horizonDays: number;
   explanation: string;
   dataPoints: number;
-  success: boolean;
-}
-
-export interface AIQueryResult {
-  intent: string;
-  agentsUsed: string[];
-  recommendation?: {
-    decision: string;
-    sellNowQuantity?: number;
-    holdQuantity?: number;
-    confidence: number;
-    reasoning: string[];
-    riskLevel: string;
-  };
-  forecast?: ForecastResult;
-  matchedBuyers?: MatchedBuyer[];
-  netPriceComparison?: {
-    mandiPrice: number;
-    bestBuyerGrossPrice: number;
-    transportCostPerUnit: number;
-    bestBuyerNetRealization: number;
-    betterOption: 'BUYER' | 'MANDI';
-  };
-  explanation: string;
-  dataTimestamp: string;
-  executionMs: number;
-  provider: string;
 }
 
 export interface MatchedBuyer {
@@ -182,6 +164,46 @@ export interface MatchedBuyer {
   rating: number;
   score: number;
   isVerified: boolean;
+}
+
+export interface NetPriceComparison {
+  mandiPrice: number;
+  bestBuyerGrossPrice: number;
+  transportCostPerUnit: number;
+  bestBuyerNetRealization: number;
+  betterOption: BetterOption;
+}
+
+export interface AIRecommendation {
+  decision: RecommendationDecision;
+  sellNowQuantity: number;
+  holdQuantity: number;
+  confidence: number;
+  reasoning: string[];
+  riskLevel: RiskLevel;
+}
+
+/** One step in the agentic ReAct loop — shown in the UI as a live trace */
+export interface AgentStep {
+  toolName: string;
+  toolCallId: string;
+  inputArgs: Record<string, unknown>;
+  outputSummary: string;
+  durationMs: number;
+}
+
+export interface AIQueryResult {
+  intent: string;
+  agentsUsed: string[];
+  agentSteps: AgentStep[];
+  recommendation?: AIRecommendation;
+  forecast?: ForecastResult;
+  matchedBuyers?: MatchedBuyer[];
+  netPriceComparison?: NetPriceComparison;
+  explanation: string;
+  dataTimestamp: string;
+  executionMs: number;
+  provider: string;
 }
 
 export interface IncomeSummary {

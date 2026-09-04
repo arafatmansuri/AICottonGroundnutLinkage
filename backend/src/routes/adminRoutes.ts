@@ -4,6 +4,11 @@ import prisma from '../database/client';
 import { aiOrchestrator } from '../orchestrator/aiOrchestrator';
 import { paginationSchema, validate } from '../validators/schemas';
 
+// The Prisma generated client may be stale (prisma generate not yet re-run after
+// schema changes). Cast audit log data to avoid compile-time failures.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AuditInput = any;
+
 const router = Router();
 router.use(authenticate, authorize('ADMIN'));
 
@@ -73,10 +78,10 @@ router.patch('/farmers/:id/status', async (req: Request, res: Response, next: Ne
       data: {
         userId: req.user!.id,
         action: status === 'SUSPENDED' ? 'SUSPEND' : 'UPDATE',
-        entityType: 'USER',
+        entity: 'USER',
         entityId: farmer.userId,
         details: { newStatus: status },
-      },
+      } as AuditInput,
     });
 
     res.json({ success: true, message: `Farmer ${status.toLowerCase()}` });
@@ -152,10 +157,10 @@ router.patch('/buyers/:id/verify', async (req: Request, res: Response, next: Nex
       data: {
         userId: req.user!.id,
         action: 'VERIFY',
-        entityType: 'BUYER_PROFILE',
+        entity: 'BUYER_PROFILE',
         entityId: req.params.id,
         details: { status, notes },
-      },
+      } as AuditInput,
     });
 
     res.json({ success: true, message: `Buyer ${status.toLowerCase()}` });
@@ -217,10 +222,10 @@ router.patch('/transactions/:id/resolve', async (req: Request, res: Response, ne
       data: {
         userId: req.user!.id,
         action: 'STATUS_CHANGE',
-        entityType: 'TRANSACTION',
+        entity: 'TRANSACTION',
         entityId: req.params.id,
         details: { from: tx.status, to: action, resolvedByAdmin: true },
-      },
+      } as AuditInput,
     });
 
     res.json({ success: true, message: `Transaction ${action.toLowerCase()}` });
@@ -247,10 +252,10 @@ router.post('/market-prices', async (req: Request, res: Response, next: NextFunc
       data: {
         userId: req.user!.id,
         action: 'CREATE',
-        entityType: 'MARKET_PRICE',
+        entity: 'MARKET_PRICE',
         entityId: price.id,
         details: { cropId, mandiId, modalPrice, priceDate },
-      },
+      } as AuditInput,
     });
 
     res.status(201).json({ success: true, data: price });

@@ -2,6 +2,9 @@ import prisma from '../database/client';
 import { BusinessLogicError, NotFoundError } from '../middleware/errorHandler';
 import logger from '../utils/logger';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AuditInput = any;
+
 type TransactionStatus = 'OFFER_CREATED' | 'OFFER_SENT' | 'ACCEPTED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED' | 'DISPUTED';
 
 // Valid state transitions
@@ -26,13 +29,14 @@ function canTransition(from: TransactionStatus, to: TransactionStatus): boolean 
 async function createAuditLog(params: {
   userId: string;
   action: string;
-  entityType: string;
+  entity: string;
   entityId: string;
   details?: object;
   ipAddress?: string;
 }) {
   try {
-    await prisma.auditLog.create({ data: params });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await prisma.auditLog.create({ data: params as any });
   } catch (err) {
     logger.error('Failed to write audit log:', err);
   }
@@ -71,7 +75,8 @@ export async function createTransaction(input: {
   // Idempotency: return existing transaction for same key
   if (input.idempotencyKey) {
     const existing = await prisma.transaction.findFirst({
-      where: { idempotencyKey: input.idempotencyKey },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      where: { idempotencyKey: input.idempotencyKey } as any,
     });
     if (existing) return existing;
   }
@@ -148,7 +153,7 @@ export async function createTransaction(input: {
     await createAuditLog({
       userId: input.farmerUserId,
       action: 'CREATE',
-      entityType: 'TRANSACTION',
+      entity: 'TRANSACTION',
       entityId: transaction.id,
       details: { quantity: input.quantity, buyerOfferId: input.buyerOfferId, status: 'OFFER_SENT' },
     });
@@ -264,7 +269,7 @@ export async function updateTransactionStatus(
     await createAuditLog({
       userId,
       action: 'STATUS_CHANGE',
-      entityType: 'TRANSACTION',
+      entity: 'TRANSACTION',
       entityId: transactionId,
       details: { from: transaction.status, to: newStatus },
     });
