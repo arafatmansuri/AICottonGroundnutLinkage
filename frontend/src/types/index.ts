@@ -45,8 +45,7 @@ export interface FarmerCrop {
   id: string;
   cropId: string;
   crop: Crop;
-  totalQuantity: number;
-  availableQuantity: number;
+  quantity: number;
   soldQuantity: number;
   unit: string;
   quality: string;
@@ -212,8 +211,7 @@ export interface IncomeSummary {
   cropSummaries: Array<{
     id: string;
     cropName: string;
-    totalQuantity: number;
-    availableQuantity: number;
+    quantity: number;
     soldQuantity: number;
     unit: string;
     quality: string;
@@ -221,8 +219,6 @@ export interface IncomeSummary {
     marketPrice: number;
     storageStatus: string;
   }>;
-  recentTransactions: Transaction[];
-  transactionCount: number;
 }
 
 export interface AdminStats {

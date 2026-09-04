@@ -20,7 +20,7 @@ export async function updateFarmerProfile(userId: string, data: Partial<{
 }
 
 export async function addFarmerCrop(userId: string, input: {
-  cropId: string; totalQuantity: number; unit: string; quality: string;
+  cropId: string; quantity: number; soldQuantity: number; unit: string; quality: string;
   harvestDate?: string; storageStatus: string; expectedPrice?: number;
   location: string; district: string; notes?: string;
 }) {
@@ -34,8 +34,8 @@ export async function addFarmerCrop(userId: string, input: {
     data: {
       farmerProfileId: profile.id,
       cropId: input.cropId,
-      totalQuantity: input.totalQuantity,
-      availableQuantity: input.totalQuantity,
+      quantity: input.quantity,
+      soldQuantity: input.soldQuantity,
       unit: input.unit,
       quality: input.quality as any,
       harvestDate: input.harvestDate ? new Date(input.harvestDate) : undefined,
@@ -86,7 +86,7 @@ export async function getFarmerCropById(userId: string, cropId: string) {
 }
 
 export async function updateFarmerCrop(userId: string, cropId: string, data: Partial<{
-  totalQuantity: number; expectedPrice: number; storageStatus: string;
+  quantity: number; soldQuantity: number; expectedPrice: number; storageStatus: string;
   quality: string; notes: string; location: string; district: string;
 }>) {
   const profile = await prisma.farmerProfile.findUnique({ where: { userId } });
@@ -129,16 +129,6 @@ export async function getIncomeSummary(userId: string) {
     include: { crop: true },
   });
 
-  const transactions = await prisma.transaction.findMany({
-    where: { farmerProfileId: profile.id, status: 'COMPLETED' },
-    include: { buyerProfile: true, farmerCrop: { include: { crop: true } } },
-    orderBy: { createdAt: 'desc' },
-    take: 20,
-  });
-
-  const totalNetIncome = transactions.reduce((sum, t) => sum + t.netRealization * t.quantity, 0);
-  const totalSoldQuantity = transactions.reduce((sum, t) => sum + t.quantity, 0);
-
   // Get latest market prices for current value estimation
   const latestPrices = await prisma.marketPrice.findMany({
     where: { cropId: { in: crops.map((c) => c.cropId) } },
@@ -153,22 +143,26 @@ export async function getIncomeSummary(userId: string) {
     return {
       id: fc.id,
       cropName: fc.crop.name,
-      totalQuantity: fc.totalQuantity,
-      availableQuantity: fc.availableQuantity,
+      quantity: fc.quantity,
       soldQuantity: fc.soldQuantity,
       unit: fc.unit,
       quality: fc.quality,
-      currentMarketValue: fc.availableQuantity * marketPrice,
+      currentMarketValue: fc.quantity * marketPrice,
       marketPrice,
       storageStatus: fc.storageStatus,
     };
   });
 
+  // Derive totals directly from crop records
+  const totalSoldQuantity = crops.reduce((sum, fc) => sum + fc.soldQuantity, 0);
+  const totalNetIncome = crops.reduce((sum, fc) => {
+    const price = fc.expectedPrice ?? priceMap.get(fc.cropId) ?? 0;
+    return sum + fc.soldQuantity * price;
+  }, 0);
+
   return {
     totalNetIncome,
     totalSoldQuantity,
     cropSummaries,
-    recentTransactions: transactions.slice(0, 10),
-    transactionCount: transactions.length,
   };
 }

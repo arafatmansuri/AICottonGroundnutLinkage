@@ -35,3 +35,54 @@ export function CardSkeleton({ lines = 3 }: { lines?: number }) {
     </div>
   );
 }
+
+export function AIRecommendationSkeleton() {
+  return (
+    <div className="card border-2 border-green-100 animate-pulse">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-5 h-5 bg-gray-200 rounded-full" />
+        <div className="h-4 bg-gray-200 rounded w-36" />
+        <div className="ml-auto h-5 bg-gray-200 rounded-full w-28" />
+      </div>
+
+      {/* Decision badge */}
+      <div className="h-9 bg-gray-200 rounded-xl w-40 mb-4" />
+
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i}>
+            <div className="h-3 bg-gray-200 rounded w-16 mb-1.5" />
+            <div className="h-6 bg-gray-200 rounded w-20" />
+          </div>
+        ))}
+      </div>
+
+      {/* Reasoning bullets */}
+      <div className="space-y-2 mb-4">
+        {[80, 65, 72].map(w => (
+          <div key={w} className="flex items-start gap-2">
+            <div className="w-2 h-2 bg-gray-200 rounded-full mt-1.5 flex-shrink-0" />
+            <div className="h-3 bg-gray-200 rounded flex-1" style={{ width: `${w}%` }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Value comparison bar */}
+      <div className="flex justify-between bg-gray-50 rounded-xl p-3">
+        <div>
+          <div className="h-3 bg-gray-200 rounded w-24 mb-1.5" />
+          <div className="h-5 bg-gray-200 rounded w-20" />
+        </div>
+        <div className="text-right">
+          <div className="h-3 bg-gray-200 rounded w-28 mb-1.5 ml-auto" />
+          <div className="h-5 bg-gray-200 rounded w-24 ml-auto" />
+        </div>
+      </div>
+
+      {/* Disclaimer bar */}
+      <div className="mt-4 h-10 bg-amber-50 rounded-xl" />
+    </div>
+  );
+}

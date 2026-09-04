@@ -227,9 +227,7 @@ async function main() {
     data: {
       farmerProfileId: farmerProfiles[0].id,
       cropId: cotton.id,
-      totalQuantity: 150,
-      availableQuantity: 110,
-      soldQuantity: 40,
+      quantity: 150,
       unit: 'quintal',
       quality: 'GRADE_A',
       harvestDate: new Date(Date.now() - 45 * 86400000),
@@ -245,9 +243,7 @@ async function main() {
     data: {
       farmerProfileId: farmerProfiles[1].id,
       cropId: groundnut.id,
-      totalQuantity: 80,
-      availableQuantity: 80,
-      soldQuantity: 0,
+      quantity: 80,
       unit: 'quintal',
       quality: 'GRADE_B',
       harvestDate: new Date(Date.now() - 20 * 86400000),
@@ -263,9 +259,7 @@ async function main() {
     data: {
       farmerProfileId: farmerProfiles[2].id,
       cropId: cotton.id,
-      totalQuantity: 200,
-      availableQuantity: 200,
-      soldQuantity: 0,
+      quantity: 200,
       unit: 'quintal',
       quality: 'GRADE_B',
       harvestDate: new Date(Date.now() - 10 * 86400000),

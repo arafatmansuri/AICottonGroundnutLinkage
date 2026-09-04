@@ -10,25 +10,7 @@ import type { RootState } from '../store';
 import { logout } from '../store/authSlice';
 import { setLanguage } from '../store/uiSlice';
 import { authApi } from '../api';
-import { t } from '../i18n';
-
-const farmerNav = [
-  { to: '/farmer/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/farmer/market', icon: TrendingUp, label: 'Market Prices' },
-  { to: '/farmer/crops', icon: Wheat, label: 'My Crops' },
-  { to: '/farmer/buyers', icon: Users, label: 'Buyers' },
-  { to: '/farmer/storage-advisor', icon: Briefcase, label: 'Storage Advisor' },
-  { to: '/farmer/quality', icon: Star, label: 'Quality Check' },
-  { to: '/farmer/income', icon: Wallet, label: 'Income' },
-  { to: '/farmer/ai-assistant', icon: Bot, label: 'AI Assistant' },
-];
-
-const adminNav = [
-  { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Overview' },
-  { to: '/admin/farmers', icon: Users, label: 'Farmers' },
-  { to: '/admin/buyers', icon: Briefcase, label: 'Buyers' },
-  { to: '/admin/market-data', icon: TrendingUp, label: 'Market Data' },
-];
+import { useLanguage } from '../hooks/useLanguage';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -39,8 +21,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const { user } = useSelector((s: RootState) => s.auth);
   const { language } = useSelector((s: RootState) => s.ui);
+  const { t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [langOpen, setLangOpen] = useState(false);
+
+  const farmerNav = [
+    { to: '/farmer/dashboard', icon: LayoutDashboard, key: 'dashboard' },
+    { to: '/farmer/market', icon: TrendingUp, key: 'market_prices' },
+    { to: '/farmer/crops', icon: Wheat, key: 'my_crops' },
+    { to: '/farmer/buyers', icon: Users, key: 'buyers' },
+    { to: '/farmer/storage-advisor', icon: Briefcase, key: 'storage_advisor' },
+    { to: '/farmer/quality', icon: Star, key: 'quality_check' },
+    { to: '/farmer/income', icon: Wallet, key: 'income' },
+    { to: '/farmer/ai-assistant', icon: Bot, key: 'ai_assistant' },
+  ];
+
+  const adminNav = [
+    { to: '/admin/dashboard', icon: LayoutDashboard, key: 'overview' },
+    { to: '/admin/farmers', icon: Users, key: 'farmers' },
+    { to: '/admin/buyers', icon: Briefcase, key: 'buyers' },
+    { to: '/admin/market-data', icon: TrendingUp, key: 'market_data' },
+  ];
 
   const navItems = user?.role === 'FARMER' ? farmerNav : adminNav;
 
@@ -50,7 +51,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     navigate('/login');
   };
 
-  const languages = [{ code: 'en', label: 'English' }, { code: 'hi', label: 'हिंदी' }, { code: 'gu', label: 'ગુજરાતી' }];
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'gu', label: 'ગુજરાતી' },
+    { code: 'hi', label: 'हिंदी' },
+  ];
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -84,7 +89,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               }
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />
-              {sidebarOpen && <span>{(item as any).label || t((item as any).key || '', language)}</span>}
+              {sidebarOpen && <span>{t(item.key)}</span>}
             </NavLink>
           ))}
         </nav>
@@ -107,7 +112,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <button
                       key={lang.code}
                       onClick={() => { dispatch(setLanguage(lang.code as any)); setLangOpen(false); }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-green-50 hover:text-green-700"
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-green-50 hover:text-green-700 ${
+                        language === lang.code ? 'bg-green-50 text-green-700 font-medium' : ''
+                      }`}
                     >
                       {lang.label}
                     </button>
@@ -121,7 +128,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl"
           >
             <LogOut className="w-4 h-4 flex-shrink-0" />
-            {sidebarOpen && <span>{t('logout', language)}</span>}
+            {sidebarOpen && <span>{t('logout')}</span>}
           </button>
         </div>
       </aside>

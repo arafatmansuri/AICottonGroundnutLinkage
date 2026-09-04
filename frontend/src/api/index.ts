@@ -51,7 +51,8 @@ export interface AuthTokens {
 
 export interface FarmerCropInput {
   cropId: string;
-  totalQuantity: number;
+  quantity: number;
+  soldQuantity?: number;
   unit?: string;
   quality?: 'GRADE_A' | 'GRADE_B' | 'GRADE_C' | 'UNGRADED';
   harvestDate?: string;

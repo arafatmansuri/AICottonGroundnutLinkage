@@ -198,6 +198,54 @@ export class MockAIProvider implements AIProvider {
     // Final answer generation (after tools have been called)
     const systemContent = messages.find(m => m.role === 'system');
     const systemText = typeof systemContent?.content === 'string' ? systemContent.content : '';
+
+    // Storage advisor JSON response — detected by the JSON schema in system prompt
+    if (systemText.includes('sell-vs-store') || systemText.includes('agricultural market advisor')) {
+      // Extract gain hint from user message to pick a plausible recommendation
+      const gainMatch = userText.match(/Gain per quintal if stored: ₹(-?\d+)/);
+      const gainPerUnit = gainMatch ? parseInt(gainMatch[1]) : 50;
+      const confidenceMatch = userText.match(/Forecast confidence: (\d+)%/);
+      const confidence = confidenceMatch ? parseInt(confidenceMatch[1]) : 65;
+
+      let recommendation = 'SELL_PARTIALLY';
+      let riskLevel = 'MEDIUM';
+      let reasoning: string[];
+
+      if (gainPerUnit <= 0) {
+        recommendation = 'SELL_NOW';
+        riskLevel = 'HIGH';
+        reasoning = [
+          'Expected future value after storage costs is lower than current selling price.',
+          'Selling now locks in maximum returns without storage risk.',
+        ];
+      } else if (gainPerUnit > 200 && confidence >= 70) {
+        recommendation = 'STORE';
+        riskLevel = confidence >= 75 ? 'LOW' : 'MEDIUM';
+        reasoning = [
+          `Price forecast indicates a gain of ₹${gainPerUnit}/qtl after storage costs.`,
+          `Market confidence is ${confidence}% — favorable conditions for storage.`,
+          'Storing allows you to benefit from the projected price rise.',
+        ];
+      } else {
+        recommendation = 'SELL_PARTIALLY';
+        riskLevel = 'MEDIUM';
+        reasoning = [
+          'Moderate price improvement expected — partial selling balances risk and reward.',
+          `Estimated gain of ₹${gainPerUnit}/qtl after storage costs is modest but positive.`,
+          'Selling 60% now secures immediate income; store the rest to capture upside.',
+        ];
+      }
+
+      const explanation = `Based on current market data, a ${recommendation.replace(/_/g, ' ').toLowerCase()} strategy is recommended. ` +
+        `${reasoning[0]} Risk level is assessed as ${riskLevel}. ` +
+        `★ AI-assisted guidance — not a guaranteed financial outcome.`;
+
+      return {
+        role: 'assistant',
+        content: JSON.stringify({ recommendation, riskLevel, reasoning, explanation }),
+      };
+    }
+
     const language = systemText.includes('gu') ? 'gu' : systemText.includes('hi') ? 'hi' : 'en';
 
     if (language === 'gu') {

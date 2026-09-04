@@ -5,9 +5,7 @@ import type { AIQueryInput } from '../../api';
 import type { AIQueryResult, AgentStep, Crop, FarmerCrop, MatchedBuyer } from '../../types';
 import { formatCurrency, getDecisionColor, getDecisionLabel } from '../../utils';
 import { Bot, Send, Loader2, ChevronDown, ChevronUp, Zap, CheckCircle2, TrendingUp, TrendingDown, Minus, Users, BarChart2 } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../store';
-import { t } from '../../i18n';
+import { useLanguage } from '../../hooks/useLanguage';
 import toast from 'react-hot-toast';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -138,6 +136,7 @@ function toolLabel(name: string): string {
 // ── Forecast Card ─────────────────────────────────────────────────────────────
 
 function ForecastCard({ forecast }: { forecast: NonNullable<AIQueryResult['forecast']> }) {
+  const { t } = useLanguage();
   const TrendIcon =
     forecast.trend === 'INCREASING' ? TrendingUp :
     forecast.trend === 'DECREASING' ? TrendingDown : Minus;
@@ -150,22 +149,22 @@ function ForecastCard({ forecast }: { forecast: NonNullable<AIQueryResult['forec
     <div className="bg-white rounded-xl border border-gray-200 p-3 mt-2">
       <div className="flex items-center gap-1.5 mb-2">
         <BarChart2 className="w-3.5 h-3.5 text-blue-500" />
-        <span className="text-xs font-semibold text-gray-700">Price Forecast (7-day)</span>
+        <span className="text-xs font-semibold text-gray-700">{t('price_forecast_7day')}</span>
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="bg-gray-50 rounded-lg p-2 text-center">
-          <p className="text-gray-400 mb-0.5">Current</p>
+          <p className="text-gray-400 mb-0.5">{t('current')}</p>
           <p className="font-bold text-gray-900">{formatCurrency(forecast.currentPrice)}</p>
-          <p className="text-gray-400">/qtl</p>
+          <p className="text-gray-400">/{t('qtl')}</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-2 text-center">
-          <p className="text-gray-400 mb-0.5">Forecast Range</p>
+          <p className="text-gray-400 mb-0.5">{t('forecast_range')}</p>
           <p className="font-semibold text-gray-800">
             {formatCurrency(forecast.forecastRange.min)}–{formatCurrency(forecast.forecastRange.max)}
           </p>
         </div>
         <div className="bg-gray-50 rounded-lg p-2 text-center">
-          <p className="text-gray-400 mb-0.5">Trend</p>
+          <p className="text-gray-400 mb-0.5">{t('trend')}</p>
           <div className={`flex items-center justify-center gap-1 font-semibold ${trendColor}`}>
             <TrendIcon className="w-3 h-3" />
             <span className="capitalize">{forecast.trend.toLowerCase()}</span>
@@ -183,23 +182,24 @@ function ForecastCard({ forecast }: { forecast: NonNullable<AIQueryResult['forec
 // ── Buyer Table ───────────────────────────────────────────────────────────────
 
 function BuyerTable({ buyers }: { buyers: MatchedBuyer[] }) {
+  const { t } = useLanguage();
   if (buyers.length === 0) return null;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 mt-2 overflow-hidden">
       <div className="flex items-center gap-1.5 px-3 py-2 border-b border-gray-100">
         <Users className="w-3.5 h-3.5 text-purple-500" />
-        <span className="text-xs font-semibold text-gray-700">Matched Buyers ({buyers.length})</span>
+        <span className="text-xs font-semibold text-gray-700">{t('matched_buyers')} ({buyers.length})</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-gray-50 text-gray-500">
-              <th className="text-left px-3 py-2 font-medium">Buyer</th>
-              <th className="text-right px-3 py-2 font-medium">Offered</th>
-              <th className="text-right px-3 py-2 font-medium">Transport</th>
-              <th className="text-right px-3 py-2 font-medium">Net</th>
-              <th className="text-center px-3 py-2 font-medium">Status</th>
+              <th className="text-left px-3 py-2 font-medium">{t('buyers')}</th>
+              <th className="text-right px-3 py-2 font-medium">{t('gross_price')}</th>
+              <th className="text-right px-3 py-2 font-medium">{t('transport_cost')}</th>
+              <th className="text-right px-3 py-2 font-medium">{t('net_price')}</th>
+              <th className="text-center px-3 py-2 font-medium">{t('verified')}</th>
             </tr>
           </thead>
           <tbody>
@@ -220,9 +220,9 @@ function BuyerTable({ buyers }: { buyers: MatchedBuyer[] }) {
                 </td>
                 <td className="px-3 py-2 text-center">
                   {b.isVerified ? (
-                    <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">✓ Verified</span>
+                    <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">✓ {t('verified')}</span>
                   ) : (
-                    <span className="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">Pending</span>
+                    <span className="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{t('pending')}</span>
                   )}
                 </td>
               </tr>
@@ -243,6 +243,7 @@ interface AgentTraceProps {
 }
 
 function AgentTrace({ steps, executionMs, provider }: AgentTraceProps) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
 
   if (steps.length === 0) return null;
@@ -256,7 +257,7 @@ function AgentTrace({ steps, executionMs, provider }: AgentTraceProps) {
         <span className="flex items-center gap-1.5">
           <Zap className="w-3 h-3 text-purple-500" />
           <span className="font-medium text-purple-700">
-            Agentic trace — {steps.length} tool{steps.length !== 1 ? 's' : ''} called
+            {t('agentic_trace')} — {steps.length} {steps.length !== 1 ? t('tools_called_plural') : t('tools_called')}
           </span>
           <span className="text-gray-400">· {executionMs}ms · {provider}</span>
         </span>
@@ -295,11 +296,11 @@ interface CropSelectionBubbleProps {
 }
 
 function CropSelectionBubble({ msg, crops, onSelect }: CropSelectionBubbleProps) {
+  const { t } = useLanguage();
   return (
     <div className="bg-gray-50 text-gray-800 rounded-2xl px-4 py-3 max-w-[85%]">
       <p className="text-sm text-gray-700 mb-2">
-        To answer your question, I need to know which crop you're asking about.
-        Please select one:
+        {t('crop_selection_prompt')}
       </p>
       <div className="flex flex-wrap gap-2">
         {crops.map(c => (
@@ -318,7 +319,7 @@ function CropSelectionBubble({ msg, crops, onSelect }: CropSelectionBubbleProps)
         ))}
       </div>
       {msg.resolved && (
-        <p className="text-xs text-gray-400 mt-2 italic">Selection confirmed ✓</p>
+        <p className="text-xs text-gray-400 mt-2 italic">{t('selection_confirmed')}</p>
       )}
     </div>
   );
@@ -327,6 +328,7 @@ function CropSelectionBubble({ msg, crops, onSelect }: CropSelectionBubbleProps)
 // ── Assistant message bubble ──────────────────────────────────────────────────
 
 function AssistantBubble({ msg }: { msg: AssistantMessage }) {
+  const { t } = useLanguage();
   const hasStructuredData = msg.data.agentSteps.length > 0;
 
   return (
@@ -357,30 +359,30 @@ function AssistantBubble({ msg }: { msg: AssistantMessage }) {
           {/* Net price comparison */}
           {msg.data.netPriceComparison && (
             <div className="bg-white rounded-xl border border-gray-200 p-3 text-xs">
-              <p className="font-semibold text-gray-700 mb-2">💰 Net Price Comparison</p>
+              <p className="font-semibold text-gray-700 mb-2">{t('net_price_comparison')}</p>
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Mandi Price</span>
+                  <span className="text-gray-500">{t('mandi_price')}</span>
                   <span className="font-medium text-gray-800">
-                    {formatCurrency(msg.data.netPriceComparison.mandiPrice)}/qtl
+                    {formatCurrency(msg.data.netPriceComparison.mandiPrice)}/{t('qtl')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Best Buyer Offered</span>
+                  <span className="text-gray-500">{t('best_buyer_offered')}</span>
                   <span className="font-medium text-gray-800">
-                    {formatCurrency(msg.data.netPriceComparison.bestBuyerGrossPrice)}/qtl
+                    {formatCurrency(msg.data.netPriceComparison.bestBuyerGrossPrice)}/{t('qtl')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Transport Cost</span>
+                  <span className="text-gray-500">{t('transport_cost')}</span>
                   <span className="text-red-500">
-                    -{formatCurrency(msg.data.netPriceComparison.transportCostPerUnit)}/qtl
+                    -{formatCurrency(msg.data.netPriceComparison.transportCostPerUnit)}/{t('qtl')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center border-t border-gray-100 pt-1.5 mt-1">
-                  <span className="font-semibold text-gray-700">Best Buyer Net</span>
+                  <span className="font-semibold text-gray-700">{t('best_buyer_net')}</span>
                   <span className={`font-bold text-base ${msg.data.netPriceComparison.betterOption === 'BUYER' ? 'text-green-600' : 'text-gray-700'}`}>
-                    {formatCurrency(msg.data.netPriceComparison.bestBuyerNetRealization)}/qtl
+                    {formatCurrency(msg.data.netPriceComparison.bestBuyerNetRealization)}/{t('qtl')}
                   </span>
                 </div>
                 <div className="mt-1.5 text-center">
@@ -389,7 +391,7 @@ function AssistantBubble({ msg }: { msg: AssistantMessage }) {
                       ? 'bg-green-100 text-green-700'
                       : 'bg-blue-100 text-blue-700'
                   }`}>
-                    Better option: {msg.data.netPriceComparison.betterOption}
+                    {t('better_option')}: {msg.data.netPriceComparison.betterOption}
                   </span>
                 </div>
               </div>
@@ -404,7 +406,7 @@ function AssistantBubble({ msg }: { msg: AssistantMessage }) {
           {/* Reasoning bullets */}
           {(msg.data.recommendation?.reasoning?.length ?? 0) > 0 && (
             <div className="bg-white rounded-xl border border-gray-200 p-3 text-xs">
-              <p className="font-semibold text-gray-700 mb-1.5">Analysis Points</p>
+              <p className="font-semibold text-gray-700 mb-1.5">{t('analysis_points')}</p>
               <div className="space-y-1 text-gray-600">
                 {msg.data.recommendation!.reasoning.map((r, ri) => (
                   <div key={ri} className="flex gap-1.5">
@@ -431,13 +433,13 @@ function AssistantBubble({ msg }: { msg: AssistantMessage }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AIAssistantPage() {
-  const { language } = useSelector((s: RootState) => s.ui);
+  const { t, language } = useLanguage();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Hello! I am your AI market advisor. Ask me anything about your crops, market prices, when to sell, or which buyers to choose. I analyze real-time data to give you personalized recommendations.',
+      content: t('ai_greeting'),
       timestamp: new Date(),
       data: {
         intent: 'GENERAL',
@@ -485,7 +487,7 @@ export default function AIAssistantPage() {
       toast.error('AI service temporarily unavailable');
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'I\'m having trouble connecting to the AI service right now. Please try again in a moment.',
+        content: t('ai_unavailable'),
         timestamp: new Date(),
         data: {
           intent: 'ERROR',
@@ -576,10 +578,10 @@ export default function AIAssistantPage() {
   };
 
   const suggestions: string[] = [
-    'Should I sell my cotton now or wait?',
-    'Find me the best buyer for my groundnut',
-    'What is the current market trend?',
-    'How much can I earn from selling now?',
+    t('suggestion_1'),
+    t('suggestion_2'),
+    t('suggestion_3'),
+    t('suggestion_4'),
   ];
 
   return (
@@ -599,14 +601,14 @@ export default function AIAssistantPage() {
 
       {/* Context selectors */}
       <div className="card p-4">
-        <p className="text-xs font-medium text-gray-500 mb-2">Select context for better AI analysis:</p>
+        <p className="text-xs font-medium text-gray-500 mb-2">{t('select_context')}</p>
         <div className="flex gap-3 flex-wrap">
           <select
             className="input text-sm max-w-[200px]"
             value={selectedCropId}
             onChange={e => setSelectedCropId(e.target.value)}
           >
-            <option value="">All crops</option>
+            <option value="">{t('all_crops')}</option>
             {crops?.map((c: Crop) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
@@ -616,10 +618,10 @@ export default function AIAssistantPage() {
             value={selectedFarmerCropId}
             onChange={e => setSelectedFarmerCropId(e.target.value)}
           >
-            <option value="">No specific crop</option>
+            <option value="">{t('no_specific_crop')}</option>
             {farmerCrops?.map((fc: FarmerCrop) => (
               <option key={fc.id} value={fc.id}>
-                {fc.crop?.name} — {fc.availableQuantity} qtl ({fc.district})
+                {fc.crop?.name} — {fc.quantity} qtl ({fc.district})
               </option>
             ))}
           </select>
@@ -664,7 +666,7 @@ export default function AIAssistantPage() {
               </div>
               <div className="bg-gray-50 rounded-2xl px-4 py-3 flex items-center gap-2">
                 <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
-                <span className="text-sm text-gray-500">Agent is reasoning & calling tools…</span>
+                <span className="text-sm text-gray-500">{t('agent_thinking')}</span>
               </div>
             </div>
           )}
@@ -708,7 +710,7 @@ export default function AIAssistantPage() {
       </div>
 
       <p className="text-xs text-gray-400 text-center">
-        ★ AI-assisted analysis — not a guaranteed financial outcome. Always verify with market experts.
+        {t('ai_disclaimer')}
       </p>
     </div>
   );

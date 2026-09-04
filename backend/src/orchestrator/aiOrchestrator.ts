@@ -399,7 +399,7 @@ export class AIOrchestrator {
       if (farmerCrop) {
         return {
           cropId: farmerCrop.cropId,
-          quantity: input.quantity ?? farmerCrop.availableQuantity,
+          quantity: input.quantity ?? farmerCrop.quantity,
           district: input.district ?? farmerCrop.farmerProfile.district,
           riskProfile: input.riskProfile ?? farmerCrop.farmerProfile.riskProfile,
           quality: farmerCrop.quality,
@@ -420,7 +420,7 @@ export class AIOrchestrator {
         if (farmerCrop) {
           return {
             cropId: input.cropId,
-            quantity: input.quantity ?? farmerCrop.availableQuantity,
+            quantity: input.quantity ?? farmerCrop.quantity,
             district: input.district ?? fp.district,
             riskProfile: input.riskProfile ?? fp.riskProfile,
             quality: farmerCrop.quality,

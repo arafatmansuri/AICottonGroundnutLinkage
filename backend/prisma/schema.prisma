@@ -196,8 +196,7 @@ model FarmerCrop {
   farmerProfile     FarmerProfile @relation(fields: [farmerProfileId], references: [id])
   cropId            String
   crop              Crop          @relation(fields: [cropId], references: [id])
-  totalQuantity     Float
-  availableQuantity Float
+  quantity          Float
   soldQuantity      Float         @default(0)
   unit              String        @default("quintal")
   quality           CropQuality   @default(UNGRADED)

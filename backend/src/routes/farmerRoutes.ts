@@ -33,7 +33,8 @@ router.post('/crops', async (req: Request, res: Response, next: NextFunction) =>
     const raw = validate(farmerCropSchema, req.body);
     const input = {
       cropId: raw.cropId,
-      totalQuantity: raw.totalQuantity,
+      quantity: raw.quantity,
+      soldQuantity: raw.soldQuantity ?? 0,
       unit: raw.unit || 'quintal',
       quality: raw.quality || 'UNGRADED',
       harvestDate: raw.harvestDate,

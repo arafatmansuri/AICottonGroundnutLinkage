@@ -95,12 +95,6 @@ export async function createTransaction(input: {
     if (!farmerCrop) throw new NotFoundError('Farmer crop');
 
     if (input.quantity <= 0) throw new BusinessLogicError('Quantity must be positive');
-    if (farmerCrop.availableQuantity < input.quantity) {
-      throw new BusinessLogicError(
-        `Insufficient quantity. Available: ${farmerCrop.availableQuantity}, Requested: ${input.quantity}`,
-        'INSUFFICIENT_QUANTITY'
-      );
-    }
 
     // Get buyer offer
     const buyerOffer = await tx.buyerOffer.findFirst({
@@ -141,12 +135,6 @@ export async function createTransaction(input: {
         ],
         idempotencyKey: input.idempotencyKey,
       },
-    });
-
-    // Reserve inventory atomically
-    await tx.farmerCrop.update({
-      where: { id: input.farmerCropId },
-      data: { availableQuantity: farmerCrop.availableQuantity - input.quantity },
     });
 
     // Audit log
@@ -240,25 +228,12 @@ export async function updateTransactionStatus(
 
     // Finalize inventory on completion
     if (newStatus === 'COMPLETED') {
-      await tx.farmerCrop.update({
-        where: { id: transaction.farmerCropId },
-        data: { soldQuantity: { increment: transaction.quantity } },
-      });
       await tx.buyerProfile.update({
         where: { id: transaction.buyerProfileId },
         data: { totalTransactions: { increment: 1 } },
       });
     }
 
-    // Release inventory on cancel/reject
-    if (newStatus === 'CANCELLED' || newStatus === 'REJECTED') {
-      if (transaction.status !== 'COMPLETED') {
-        await tx.farmerCrop.update({
-          where: { id: transaction.farmerCropId },
-          data: { availableQuantity: { increment: transaction.quantity } },
-        });
-      }
-    }
 
     return { updatedTx, transaction };
   }).then(async ({ updatedTx, transaction }) => {

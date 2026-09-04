@@ -3,6 +3,7 @@ import { notificationApi } from '../../api';
 import { formatDateTime } from '../../utils';
 import { Bell, CheckCheck, BellOff } from 'lucide-react';
 import { EmptyState } from '../../components/common/StateComponents';
+import { useLanguage } from '../../hooks/useLanguage';
 import toast from 'react-hot-toast';
 
 const typeColors: Record<string, string> = {
@@ -15,6 +16,7 @@ const typeColors: Record<string, string> = {
 };
 
 export default function NotificationsPage() {
+  const { t } = useLanguage();
   const qc = useQueryClient();
 
   const { data: notifications, isLoading } = useQuery({
@@ -31,7 +33,7 @@ export default function NotificationsPage() {
     mutationFn: () => notificationApi.markAllRead(),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['notifications'] });
-      toast.success('All marked as read');
+      toast.success(t('all_marked_read'));
     },
   });
 
@@ -41,7 +43,7 @@ export default function NotificationsPage() {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('notifications_title')}</h1>
           {unreadCount > 0 && (
             <span className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
               {unreadCount}
@@ -50,7 +52,7 @@ export default function NotificationsPage() {
         </div>
         {unreadCount > 0 && (
           <button onClick={() => markAllMutation.mutate()} className="btn-secondary text-sm flex items-center gap-2">
-            <CheckCheck className="w-4 h-4" /> Mark all read
+            <CheckCheck className="w-4 h-4" /> {t('mark_all_read')}
           </button>
         )}
       </div>
@@ -59,8 +61,8 @@ export default function NotificationsPage() {
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="card h-16 skeleton" />)}</div>
       ) : notifications?.length === 0 ? (
         <EmptyState
-          title="No notifications"
-          description="You'll receive notifications about price alerts, buyer matches, and market updates here."
+          title={t('no_notifications')}
+          description={t('no_notifications_desc')}
           action={<BellOff className="w-8 h-8 text-gray-300 mx-auto" />}
         />
       ) : (

@@ -5,12 +5,14 @@ import { CardSkeleton } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/StateComponents';
 import { formatCurrency, getTrendColor, getTrendIcon, formatDate } from '../../utils';
 import { Filter, Clock, AlertCircle } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend
 } from 'recharts';
 
 export default function MarketPricesPage() {
+  const { t } = useLanguage();
   const [selectedCropId, setSelectedCropId] = useState('');
   const [selectedMandiId, setSelectedMandiId] = useState('');
 
@@ -27,7 +29,7 @@ export default function MarketPricesPage() {
   const { data: latestPrices, isLoading, error, refetch, dataUpdatedAt } = useQuery({
     queryKey: ['latestPrices', selectedCropId],
     queryFn: () => marketApi.getLatestPrices(selectedCropId || undefined).then(r => r.data.data),
-    refetchInterval: 5 * 60 * 1000, // auto-refresh every 5 min
+    refetchInterval: 5 * 60 * 1000,
   });
 
   const { data: priceHistory } = useQuery({
@@ -38,7 +40,6 @@ export default function MarketPricesPage() {
     enabled: !!selectedCropId,
   });
 
-  // Format history for chart
   const chartData = priceHistory?.reduce((acc: any[], price: any) => {
     const date = new Date(price.priceDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
     const existing = acc.find(d => d.date === date);
@@ -51,7 +52,6 @@ export default function MarketPricesPage() {
   }, []) || [];
 
   const mandiNames = [...new Set(priceHistory?.map((p: any) => p.mandi?.name) || [])];
-
   const colors = ['#16a34a', '#2563eb', '#d97706', '#7c3aed', '#dc2626'];
 
   if (isLoading) return <div className="space-y-4"><CardSkeleton /><CardSkeleton /></div>;
@@ -61,19 +61,19 @@ export default function MarketPricesPage() {
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Market Prices</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('market_prices')}</h1>
           <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />
-            {dataUpdatedAt ? `Updated ${new Date(dataUpdatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'Loading…'}
-            · Auto-refreshes every 5 min
+            {dataUpdatedAt ? `${t('updated')} ${new Date(dataUpdatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : t('loading')}
+            · {t('auto_refresh')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full border border-amber-200 flex items-center gap-1.5">
             <AlertCircle className="w-3.5 h-3.5" />
-            DEMO DATA — Seed prices from mock mandi feed
+            {t('demo_data')}
           </span>
-          <button onClick={() => refetch()} className="btn-secondary text-xs">Refresh</button>
+          <button onClick={() => refetch()} className="btn-secondary text-xs">{t('refresh')}</button>
         </div>
       </div>
 
@@ -81,17 +81,17 @@ export default function MarketPricesPage() {
       <div className="card p-4">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="w-4 h-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filter</span>
+          <span className="text-sm font-medium text-gray-700">{t('filter')}</span>
         </div>
         <div className="flex gap-3 flex-wrap">
           <select className="input max-w-[180px] text-sm" value={selectedCropId}
             onChange={e => setSelectedCropId(e.target.value)}>
-            <option value="">All Crops</option>
+            <option value="">{t('all_crops_filter')}</option>
             {crops?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
           <select className="input max-w-[180px] text-sm" value={selectedMandiId}
             onChange={e => setSelectedMandiId(e.target.value)}>
-            <option value="">All Mandis</option>
+            <option value="">{t('all_mandis')}</option>
             {mandis?.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
           </select>
         </div>
@@ -101,7 +101,7 @@ export default function MarketPricesPage() {
       {selectedCropId && chartData.length > 0 && (
         <div className="card">
           <h2 className="font-semibold text-gray-900 mb-4">
-            30-Day Price Trend — {crops?.find((c: any) => c.id === selectedCropId)?.name}
+            {t('day_price_trend')} — {crops?.find((c: any) => c.id === selectedCropId)?.name}
           </h2>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={chartData}>
@@ -121,21 +121,21 @@ export default function MarketPricesPage() {
 
       {/* Latest prices table */}
       <div className="card">
-        <h2 className="font-semibold text-gray-900 mb-4">Current Mandi Prices</h2>
+        <h2 className="font-semibold text-gray-900 mb-4">{t('current_mandi_prices')}</h2>
         {latestPrices?.length === 0 ? (
-          <p className="text-center text-gray-400 py-8">No price data available for selected filters</p>
+          <p className="text-center text-gray-400 py-8">{t('no_price_data')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="text-left py-3 px-4 text-gray-500 font-medium">Mandi</th>
-                  <th className="text-left py-3 px-4 text-gray-500 font-medium">Crop</th>
-                  <th className="text-right py-3 px-4 text-gray-500 font-medium">Min</th>
-                  <th className="text-right py-3 px-4 text-gray-500 font-medium">Modal</th>
-                  <th className="text-right py-3 px-4 text-gray-500 font-medium">Max</th>
-                  <th className="text-right py-3 px-4 text-gray-500 font-medium">Trend</th>
-                  <th className="text-right py-3 px-4 text-gray-500 font-medium">Date</th>
+                  <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('mandi')}</th>
+                  <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('crop')}</th>
+                  <th className="text-right py-3 px-4 text-gray-500 font-medium">{t('min_price')}</th>
+                  <th className="text-right py-3 px-4 text-gray-500 font-medium">{t('modal_price')}</th>
+                  <th className="text-right py-3 px-4 text-gray-500 font-medium">{t('max_price')}</th>
+                  <th className="text-right py-3 px-4 text-gray-500 font-medium">{t('trend')}</th>
+                  <th className="text-right py-3 px-4 text-gray-500 font-medium">{t('date')}</th>
                 </tr>
               </thead>
               <tbody>

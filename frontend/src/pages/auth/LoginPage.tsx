@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { Eye, EyeOff, Leaf, AlertCircle } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Eye, EyeOff, Leaf, AlertCircle, Globe, ChevronDown } from 'lucide-react';
 import { setCredentials } from '../../store/authSlice';
+import { setLanguage } from '../../store/uiSlice';
 import { authApi } from '../../api';
+import type { RootState } from '../../store';
+import { useLanguage } from '../../hooks/useLanguage';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { language } = useSelector((s: RootState) => s.ui);
+  const { t } = useLanguage();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [langOpen, setLangOpen] = useState(false);
+
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'gu', label: 'ગુજરાતી' },
+    { code: 'hi', label: 'हिंदी' },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +36,6 @@ export default function LoginPage() {
       dispatch(setCredentials({ user, accessToken, refreshToken }));
       toast.success(`Welcome back, ${user.name}!`);
       if (user.role === 'FARMER') navigate('/farmer/dashboard');
-      else if (user.role === 'BUYER') navigate('/buyer/dashboard');
       else navigate('/admin/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Invalid credentials');
@@ -43,7 +54,6 @@ export default function LoginPage() {
       dispatch(setCredentials({ user, accessToken, refreshToken }));
       toast.success(`Welcome, ${user.name}!`);
       if (user.role === 'FARMER') navigate('/farmer/dashboard');
-      else if (user.role === 'BUYER') navigate('/buyer/dashboard');
       else navigate('/admin/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Login failed');
@@ -55,17 +65,44 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Language picker */}
+        <div className="flex justify-end mb-4 relative">
+          <button
+            onClick={() => setLangOpen(!langOpen)}
+            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800 bg-white border border-gray-200 rounded-xl px-3 py-1.5"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>{languages.find(l => l.code === language)?.label}</span>
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+          {langOpen && (
+            <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-10 min-w-[120px]">
+              {languages.map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => { dispatch(setLanguage(lang.code as any)); setLangOpen(false); }}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-green-50 hover:text-green-700 ${
+                    language === lang.code ? 'bg-green-50 text-green-700 font-medium' : ''
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Leaf className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">KisanMitra AI</h1>
-          <p className="text-gray-500 text-sm mt-1">AI-Powered Market Intelligence for Farmers</p>
+          <p className="text-gray-500 text-sm mt-1">{t('tagline')}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">Sign In</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-6">{t('sign_in_title')}</h2>
 
           {error && (
             <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-4 text-sm">
@@ -76,7 +113,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="label">Email</label>
+              <label className="label">{t('email')}</label>
               <input
                 type="email" className="input" placeholder="your@email.com"
                 value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
@@ -84,7 +121,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="label">Password</label>
+              <label className="label">{t('password')}</label>
               <div className="relative">
                 <input
                   type={showPwd ? 'text' : 'password'} className="input pr-10"
@@ -100,23 +137,22 @@ export default function LoginPage() {
             </div>
             <button type="submit" disabled={loading}
               className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed">
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('signing_in') : t('sign_in')}
             </button>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-4">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-green-600 hover:underline font-medium">Register</Link>
+            {t('no_account')}{' '}
+            <Link to="/register" className="text-green-600 hover:underline font-medium">{t('register')}</Link>
           </p>
         </div>
 
         {/* Demo credentials */}
         <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-5">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Demo Quick Login</p>
-          <div className="grid grid-cols-3 gap-2">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('demo_login')}</p>
+          <div className="grid grid-cols-2 gap-2">
             {[
               { label: '🌾 Farmer', email: 'ramesh@farmer.com', pass: 'farmer123' },
-              { label: '🏢 Buyer', email: 'shreeji@buyer.com', pass: 'buyer123' },
               { label: '⚙ Admin', email: 'admin@kisanmitra.ai', pass: 'admin123' },
             ].map(d => (
               <button key={d.label} onClick={() => demoLogin(d.email, d.pass)}

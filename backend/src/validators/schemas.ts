@@ -25,7 +25,8 @@ export const refreshTokenSchema = z.object({
 
 export const farmerCropSchema = z.object({
   cropId: z.string().uuid(),
-  totalQuantity: z.number().positive('Quantity must be positive'),
+  quantity: z.number().positive('Quantity must be positive'),
+  soldQuantity: z.number().min(0).default(0),
   unit: z.string().default('quintal'),
   quality: z.enum(['GRADE_A', 'GRADE_B', 'GRADE_C', 'UNGRADED']).default('UNGRADED'),
   harvestDate: z.string().optional(),

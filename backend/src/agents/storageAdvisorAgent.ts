@@ -1,4 +1,5 @@
 import { BaseAgent, AgentInput, AgentOutput } from './baseAgent';
+import { aiProvider } from '../ai/aiProvider';
 
 export interface StorageAdvisorInput extends AgentInput {
   currentPrice: number;
@@ -45,67 +46,105 @@ export class StorageSellingAdvisorAgent extends BaseAgent<StorageAdvisorInput, S
       bestBuyerNetPrice,
     } = input;
 
+    // Pre-compute numeric context to provide AI with factual grounding
     const bestCurrentPrice = Math.max(currentPrice, bestBuyerNetPrice || 0);
     const forecastMid = (forecastMin + forecastMax) / 2;
     const storageCost = storageCostPerUnit * storageDurationDays;
-
     const currentNetValue = bestCurrentPrice * quantity;
     const expectedFutureNetValue = (forecastMid - storageCost) * quantity;
     const potentialGain = expectedFutureNetValue - currentNetValue;
-
-    // Risk factors
-    const isLowConfidence = forecastConfidence < 0.6;
-    const isHighVolatility = (forecastMax - forecastMin) / forecastMid > 0.1;
     const gainPerUnit = forecastMid - storageCost - bestCurrentPrice;
 
-    const reasoning: string[] = [];
-    let recommendation: StorageAdvisorOutput['recommendation'];
-    let riskLevel: StorageAdvisorOutput['riskLevel'];
+    // Build the AI prompt with all computed facts
+    const systemPrompt = `You are an expert agricultural market advisor for Indian farmers.
+Analyze the sell-vs-store decision and respond with ONLY valid JSON — no markdown, no extra text.
 
-    // Determine risk level
-    if (isLowConfidence || isHighVolatility) {
-      riskLevel = 'HIGH';
-    } else if (forecastConfidence >= 0.75 && !isHighVolatility) {
-      riskLevel = 'LOW';
-    } else {
-      riskLevel = 'MEDIUM';
+JSON schema:
+{
+  "recommendation": "SELL_NOW" | "STORE" | "SELL_PARTIALLY" | "WAIT_AND_MONITOR",
+  "riskLevel": "LOW" | "MEDIUM" | "HIGH",
+  "reasoning": [string, string, ...],   // 2–4 concise bullet points
+  "explanation": string                 // one paragraph summary
+}
+
+Guidelines:
+- SELL_NOW if gainPerUnit <= 0 or riskProfile is LOW and confidence < 0.65
+- STORE if gainPerUnit > 200 and confidence >= 0.7 and riskProfile is not LOW
+- SELL_PARTIALLY if gainPerUnit is modest (0–200) or confidence is moderate
+- WAIT_AND_MONITOR when market signals are mixed but positive
+- riskLevel HIGH when confidence < 0.6 or price range spread > 10% of midpoint
+- riskLevel LOW when confidence >= 0.75 and spread <= 10%
+- Otherwise riskLevel MEDIUM`;
+
+    const userPrompt = `Market data for storage decision:
+- Current mandi price: ₹${currentPrice}/qtl
+- Best buyer net price: ₹${bestCurrentPrice}/qtl
+- Forecast range (30-day): ₹${forecastMin}–₹${forecastMax}/qtl (mid ₹${forecastMid.toFixed(0)})
+- Forecast confidence: ${Math.round(forecastConfidence * 100)}%
+- Storage cost: ₹${storageCostPerUnit}/qtl/day × ${storageDurationDays} days = ₹${storageCost.toFixed(0)}/qtl total
+- Quantity: ${quantity} quintals
+- Farmer risk profile: ${riskProfile}
+- Gain per quintal if stored: ₹${gainPerUnit.toFixed(0)}
+- Current net value: ₹${currentNetValue.toFixed(0)}
+- Expected future net value: ₹${expectedFutureNetValue.toFixed(0)}
+- Potential total gain: ₹${potentialGain.toFixed(0)}
+${bestBuyerNetPrice && bestBuyerNetPrice > currentPrice ? `- A verified buyer is offering ₹${bestBuyerNetPrice.toFixed(0)}/qtl — better than mandi price.` : ''}
+
+Provide your JSON recommendation.`;
+
+    let recommendation: StorageAdvisorOutput['recommendation'] = 'SELL_PARTIALLY';
+    let riskLevel: StorageAdvisorOutput['riskLevel'] = 'MEDIUM';
+    let reasoning: string[] = [];
+    let explanation = '';
+
+    try {
+      const aiMessage = await aiProvider.chat([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ]);
+
+      const raw = typeof aiMessage.content === 'string' ? aiMessage.content.trim() : '';
+      // Strip any markdown fences the model may add
+      const jsonText = raw.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
+      const parsed = JSON.parse(jsonText);
+
+      recommendation = parsed.recommendation ?? recommendation;
+      riskLevel = parsed.riskLevel ?? riskLevel;
+      reasoning = Array.isArray(parsed.reasoning) ? parsed.reasoning : [];
+      explanation = typeof parsed.explanation === 'string' ? parsed.explanation : '';
+    } catch {
+      // Fallback: derive from computed numbers if AI fails
+      if (gainPerUnit <= 0) {
+        recommendation = 'SELL_NOW';
+        riskLevel = 'HIGH';
+        reasoning = [
+          'Expected future value is lower than current selling value after storage costs.',
+          `Storage cost of ₹${storageCost.toFixed(0)}/qtl eliminates any expected price increase.`,
+        ];
+      } else if (gainPerUnit > 200 && forecastConfidence >= 0.7 && riskProfile !== 'LOW') {
+        recommendation = 'STORE';
+        riskLevel = forecastConfidence >= 0.75 ? 'LOW' : 'MEDIUM';
+        reasoning = [
+          `Expected price increase of ₹${gainPerUnit.toFixed(0)}/qtl covers storage cost with surplus.`,
+          `Forecast confidence: ${Math.round(forecastConfidence * 100)}%.`,
+        ];
+      } else {
+        recommendation = 'SELL_PARTIALLY';
+        riskLevel = 'MEDIUM';
+        reasoning = [
+          'Moderate potential gain — partial selling reduces risk while capturing some upside.',
+          `Potential gain of ₹${gainPerUnit.toFixed(0)}/qtl is modest.`,
+        ];
+      }
+      explanation = `Recommendation: ${recommendation.replace(/_/g, ' ')}. ${reasoning.join(' ')}`;
     }
 
-    // Decision logic
-    if (gainPerUnit <= 0) {
-      recommendation = 'SELL_NOW';
-      reasoning.push('Expected future value is lower than or equal to current selling value after storage costs.');
-      reasoning.push(`Storage cost of ₹${storageCost.toFixed(0)}/quintal eliminates expected price increase.`);
-    } else if (gainPerUnit > 200 && forecastConfidence >= 0.7 && riskProfile !== 'LOW') {
-      recommendation = 'STORE';
-      reasoning.push(`Expected price increase of ₹${gainPerUnit.toFixed(0)}/quintal covers storage cost with surplus.`);
-      reasoning.push(`Forecast confidence: ${Math.round(forecastConfidence * 100)}%`);
-    } else if (gainPerUnit > 0 && gainPerUnit <= 200) {
-      recommendation = 'SELL_PARTIALLY';
-      reasoning.push('Moderate potential gain — partial selling reduces risk while capturing some upside.');
-      reasoning.push(`Potential gain of ₹${gainPerUnit.toFixed(0)}/quintal is modest.`);
-    } else if (isLowConfidence) {
-      recommendation = 'SELL_PARTIALLY';
-      reasoning.push(`Forecast confidence is low (${Math.round(forecastConfidence * 100)}%). Partial selling is safer.`);
-    } else {
-      recommendation = 'WAIT_AND_MONITOR';
-      reasoning.push('Market conditions are mixed. Monitor for 1–2 days before deciding.');
-    }
-
-    if (isLowConfidence) reasoning.push('⚠ Low forecast confidence — treat this as guidance, not certainty.');
-    if (bestBuyerNetPrice && bestBuyerNetPrice > currentPrice) {
-      reasoning.push(`A verified buyer is offering ₹${bestBuyerNetPrice.toFixed(0)}/quintal net — better than mandi.`);
-    }
-
-    const sellNowQuantity = recommendation === 'SELL_NOW' ? quantity :
+    const sellNowQuantity =
+      recommendation === 'SELL_NOW' ? quantity :
       recommendation === 'STORE' ? 0 :
       recommendation === 'SELL_PARTIALLY' ? Math.round(quantity * 0.6) : 0;
 
     const storeQuantity = quantity - sellNowQuantity;
-
-    const explanation =
-      `Recommendation: ${recommendation.replace(/_/g, ' ')}. ` +
-      reasoning.join(' ');
 
     return {
       agentName: this.name,
