@@ -48,6 +48,7 @@ export default function FarmerDashboard() {
     { label: t('quality_check', language), to: '/farmer/quality', icon: Star, color: 'bg-rose-50 text-rose-600' },
     { label: t('income', language), to: '/farmer/income', icon: Wallet, color: 'bg-green-50 text-green-600' },
     { label: t('ai_assistant', language), to: '/farmer/ai-assistant', icon: Bot, color: 'bg-indigo-50 text-indigo-600' },
+    { label: t('my_crops', language), to: '/farmer/crops', icon: Wheat, color: 'bg-green-50 text-green-700' },
   ];
 
   return (

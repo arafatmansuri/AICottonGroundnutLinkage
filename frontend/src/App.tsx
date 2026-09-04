@@ -19,22 +19,12 @@ import AIAssistantPage from './pages/farmer/AIAssistantPage';
 import IncomeDashboardPage from './pages/farmer/IncomeDashboardPage';
 import StorageAdvisorPage from './pages/farmer/StorageAdvisorPage';
 import QualityCheckPage from './pages/farmer/QualityCheckPage';
-import TransactionsPage from './pages/farmer/TransactionsPage';
-import NotificationsPage from './pages/farmer/NotificationsPage';
 
-// Buyer pages
-import BuyerDashboard from './pages/buyer/BuyerDashboard';
-import BuyerTransactionsPage from './pages/buyer/BuyerTransactionsPage';
-
-// Admin pages — each has its own dedicated component
+// Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminFarmersPage from './pages/admin/AdminFarmersPage';
 import AdminBuyersPage from './pages/admin/AdminBuyersPage';
-import AdminTransactionsPage from './pages/admin/AdminTransactionsPage';
 import AdminMarketDataPage from './pages/admin/AdminMarketDataPage';
-import AdminAIMonitoringPage from './pages/admin/AdminAIMonitoringPage';
-import AdminAuditLogsPage from './pages/admin/AdminAuditLogsPage';
-import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,7 +47,6 @@ function ProtectedRoute({
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     if (user.role === 'FARMER') return <Navigate to="/farmer/dashboard" replace />;
-    if (user.role === 'BUYER') return <Navigate to="/buyer/dashboard" replace />;
     return <Navigate to="/admin/dashboard" replace />;
   }
   return <>{children}</>;
@@ -67,7 +56,6 @@ function RootRedirect() {
   const { isAuthenticated, user } = useSelector((s: RootState) => s.auth);
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role === 'FARMER') return <Navigate to="/farmer/dashboard" replace />;
-  if (user?.role === 'BUYER') return <Navigate to="/buyer/dashboard" replace />;
   if (user?.role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
   return <Navigate to="/login" replace />;
 }
@@ -89,34 +77,17 @@ function AppRoutes() {
               <Route path="crops" element={<FarmerCropsPage />} />
               <Route path="market" element={<MarketPricesPage />} />
               <Route path="buyers" element={<BuyerMarketplacePage />} />
-              <Route path="compare" element={<BuyerMarketplacePage />} />
               <Route path="storage-advisor" element={<StorageAdvisorPage />} />
               <Route path="quality" element={<QualityCheckPage />} />
               <Route path="income" element={<IncomeDashboardPage />} />
               <Route path="ai-assistant" element={<AIAssistantPage />} />
-              <Route path="transactions" element={<TransactionsPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
               <Route path="*" element={<Navigate to="/farmer/dashboard" replace />} />
             </Routes>
           </DashboardLayout>
         </ProtectedRoute>
       } />
 
-      {/* ── Buyer routes ── */}
-      <Route path="/buyer/*" element={
-        <ProtectedRoute allowedRoles={['BUYER']}>
-          <DashboardLayout>
-            <Routes>
-              <Route path="dashboard" element={<BuyerDashboard />} />
-              <Route path="offers" element={<BuyerDashboard />} />
-              <Route path="transactions" element={<BuyerTransactionsPage />} />
-              <Route path="*" element={<Navigate to="/buyer/dashboard" replace />} />
-            </Routes>
-          </DashboardLayout>
-        </ProtectedRoute>
-      } />
-
-      {/* ── Admin routes — each dedicated page ── */}
+      {/* ── Admin routes ── */}
       <Route path="/admin/*" element={
         <ProtectedRoute allowedRoles={['ADMIN']}>
           <DashboardLayout>
@@ -124,11 +95,7 @@ function AppRoutes() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="farmers" element={<AdminFarmersPage />} />
               <Route path="buyers" element={<AdminBuyersPage />} />
-              <Route path="transactions" element={<AdminTransactionsPage />} />
               <Route path="market-data" element={<AdminMarketDataPage />} />
-              <Route path="ai-monitoring" element={<AdminAIMonitoringPage />} />
-              <Route path="audit-logs" element={<AdminAuditLogsPage />} />
-              <Route path="settings" element={<AdminSettingsPage />} />
               <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
             </Routes>
           </DashboardLayout>

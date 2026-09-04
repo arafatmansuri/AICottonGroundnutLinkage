@@ -3,8 +3,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   LayoutDashboard, TrendingUp, Wheat, Users, Briefcase,
-  Star, Wallet, Bot, ArrowLeftRight, Bell, LogOut, Menu, X,
-  Globe, ChevronDown, Leaf, Shield, Settings
+  Star, Wallet, Bot, LogOut, Menu, X,
+  Globe, ChevronDown, Leaf,
 } from 'lucide-react';
 import type { RootState } from '../store';
 import { logout } from '../store/authSlice';
@@ -21,25 +21,13 @@ const farmerNav = [
   { to: '/farmer/quality', icon: Star, label: 'Quality Check' },
   { to: '/farmer/income', icon: Wallet, label: 'Income' },
   { to: '/farmer/ai-assistant', icon: Bot, label: 'AI Assistant' },
-  { to: '/farmer/transactions', icon: ArrowLeftRight, label: 'Transactions' },
-  { to: '/farmer/notifications', icon: Bell, label: 'Notifications' },
-];
-
-const buyerNav = [
-  { to: '/buyer/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/buyer/offers', icon: Briefcase, label: 'My Offers' },
-  { to: '/buyer/transactions', icon: ArrowLeftRight, label: 'Transactions' },
 ];
 
 const adminNav = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Overview' },
   { to: '/admin/farmers', icon: Users, label: 'Farmers' },
   { to: '/admin/buyers', icon: Briefcase, label: 'Buyers' },
-  { to: '/admin/transactions', icon: ArrowLeftRight, label: 'Transactions' },
   { to: '/admin/market-data', icon: TrendingUp, label: 'Market Data' },
-  { to: '/admin/ai-monitoring', icon: Bot, label: 'AI Monitoring' },
-  { to: '/admin/audit-logs', icon: Shield, label: 'Audit Logs' },
-  { to: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
 interface DashboardLayoutProps {
@@ -54,7 +42,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [langOpen, setLangOpen] = useState(false);
 
-  const navItems = user?.role === 'FARMER' ? farmerNav : user?.role === 'BUYER' ? buyerNav : adminNav;
+  const navItems = user?.role === 'FARMER' ? farmerNav : adminNav;
 
   const handleLogout = async () => {
     try { await authApi.logout(); } catch {}

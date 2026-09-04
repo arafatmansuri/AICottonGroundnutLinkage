@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../api';
-import { formatCurrency, formatDate, formatNumber } from '../../utils';
+import { formatDate, formatNumber } from '../../utils';
 import { CardSkeleton } from '../../components/common/LoadingSpinner';
-import { ShieldCheck, ShieldX, Users, Wheat, TrendingUp, Bot, ArrowLeftRight, Activity } from 'lucide-react';
+import { ShieldCheck, ShieldX, Users, Wheat, TrendingUp, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
   const qc = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'overview' | 'buyers' | 'farmers' | 'transactions' | 'ai'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'buyers' | 'farmers'>('overview');
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminStats'],
@@ -26,18 +26,6 @@ export default function AdminDashboard() {
     queryKey: ['adminFarmers'],
     queryFn: () => adminApi.getFarmers({ page: 1, limit: 20 }).then(r => r.data.data),
     enabled: activeTab === 'farmers',
-  });
-
-  const { data: txData } = useQuery({
-    queryKey: ['adminTransactions'],
-    queryFn: () => adminApi.getTransactions({ page: 1, limit: 20 }).then(r => r.data.data),
-    enabled: activeTab === 'transactions',
-  });
-
-  const { data: aiData } = useQuery({
-    queryKey: ['adminAI'],
-    queryFn: () => adminApi.getAiMonitoring().then(r => r.data.data),
-    enabled: activeTab === 'ai',
   });
 
   const verifyMutation = useMutation({
@@ -60,8 +48,6 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'buyers', label: 'Buyers', icon: Users },
     { id: 'farmers', label: 'Farmers', icon: Wheat },
-    { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
-    { id: 'ai', label: 'AI Monitor', icon: Bot },
   ];
 
   return (
@@ -94,9 +80,7 @@ export default function AdminDashboard() {
                   { label: 'Verified Buyers', value: stats?.verifiedBuyers, icon: ShieldCheck, color: 'bg-teal-100 text-teal-600' },
                   { label: 'Active Crops', value: stats?.activeCrops, icon: Wheat, color: 'bg-amber-100 text-amber-600' },
                   { label: 'Active Offers', value: stats?.activeOffers, icon: TrendingUp, color: 'bg-purple-100 text-purple-600' },
-                  { label: 'Completed Txs', value: stats?.completedTransactions, icon: ArrowLeftRight, color: 'bg-rose-100 text-rose-600' },
                   { label: 'Market Records', value: stats?.marketRecords, icon: TrendingUp, color: 'bg-cyan-100 text-cyan-600' },
-                  { label: 'AI Requests', value: stats?.aiRequests, icon: Bot, color: 'bg-indigo-100 text-indigo-600' },
                 ].map(s => (
                   <div key={s.label} className="card">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${s.color}`}>
@@ -233,98 +217,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Transactions tab */}
-      {activeTab === 'transactions' && (
-        <div>
-          <h2 className="font-semibold text-gray-900 mb-3">All Transactions</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  {['Crop', 'Farmer', 'Buyer', 'Qty', 'Net Price', 'Status', 'Date'].map(h => (
-                    <th key={h} className="text-left py-3 px-4 text-gray-500 font-medium">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {txData?.transactions?.map((tx: any) => (
-                  <tr key={tx.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium">{tx.farmerCrop?.crop?.name}</td>
-                    <td className="py-3 px-4 text-gray-600">{tx.farmerProfile?.name}</td>
-                    <td className="py-3 px-4 text-gray-600">{tx.buyerProfile?.companyName}</td>
-                    <td className="py-3 px-4">{tx.quantity} qtl</td>
-                    <td className="py-3 px-4 font-semibold text-green-700">{formatCurrency(tx.netRealization)}/qtl</td>
-                    <td className="py-3 px-4">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        tx.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                      }`}>{tx.status.replace(/_/g, ' ')}</span>
-                    </td>
-                    <td className="py-3 px-4 text-gray-400 text-xs">{formatDate(tx.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* AI Monitoring tab */}
-      {activeTab === 'ai' && (
-        <div className="space-y-4">
-          <h2 className="font-semibold text-gray-900">AI Agent Monitoring</h2>
-          {aiData?.agents?.map((agent: any) => (
-            <div key={agent.name} className="card">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                    <Bot className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{agent.name}</p>
-                    <p className="text-xs text-gray-500">Last exec: {agent.lastExecution ? formatDate(agent.lastExecution) : 'Never'}</p>
-                  </div>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                  agent.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                }`}>{agent.status}</span>
-              </div>
-              <div className="mt-3 grid grid-cols-4 gap-3 text-sm">
-                <div><p className="text-xs text-gray-500">Executions</p><p className="font-medium">{agent.executionCount}</p></div>
-                <div><p className="text-xs text-gray-500">Success Rate</p><p className="font-medium text-green-600">{Math.round(agent.successRate * 100)}%</p></div>
-                <div><p className="text-xs text-gray-500">Avg Time</p><p className="font-medium">{agent.avgExecutionMs}ms</p></div>
-                <div>
-                  <p className="text-xs text-gray-500">Health</p>
-                  <div className="h-1.5 bg-gray-200 rounded-full mt-1.5">
-                    <div className="h-full bg-green-500 rounded-full" style={{ width: `${agent.successRate * 100}%` }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {aiData?.recentRequests?.length > 0 && (
-            <div className="card">
-              <h3 className="font-semibold text-gray-900 mb-3">Recent AI Requests</h3>
-              <div className="space-y-2">
-                {aiData.recentRequests.slice(0, 10).map((req: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between text-sm p-2 hover:bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="text-gray-700 truncate max-w-[300px]">{req.query}</p>
-                      <p className="text-xs text-gray-400">{req.user?.email}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0 ml-4">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${req.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {req.success ? 'Success' : 'Failed'}
-                      </span>
-                      <p className="text-xs text-gray-400 mt-0.5">{req.executionMs}ms</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

@@ -296,7 +296,7 @@ export class GraniteAIProvider implements AIProvider {
           headers: { Authorization: `Bearer ${iamToken}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
-        console.log('Result: ', res);
+        // console.log('Result: ', res);
 
         if (res.status === 429) {
           // Respect the server's reset-after header when present, otherwise back off exponentially.
