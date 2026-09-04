@@ -53,9 +53,9 @@ export default function StorageAdvisorPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t('sell_or_store')}</h1>
-        <div className="text-xs bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full border border-amber-200">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('sell_or_store')}</h1>
+        <div className="text-xs bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full border border-amber-200 flex-shrink-0">
           {t('ai_analysis')}
         </div>
       </div>
@@ -63,13 +63,13 @@ export default function StorageAdvisorPage() {
       {/* Selectors */}
       <div className="card p-5">
         <p className="text-sm font-medium text-gray-700 mb-3">{t('select_crop_analyze')}</p>
-        <div className="flex gap-3 flex-wrap">
-          <select className="input max-w-[200px] text-sm" value={selectedCropId}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <select className="input text-sm w-full" value={selectedCropId}
             onChange={e => setSelectedCropId(e.target.value)}>
             <option value="">{t('select_crop')}</option>
             {crops?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select className="input max-w-[200px] text-sm" value={selectedMandiId}
+          <select className="input text-sm w-full" value={selectedMandiId}
             onChange={e => setSelectedMandiId(e.target.value)}>
             <option value="">{t('all_mandis')}</option>
             {mandis?.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
@@ -93,7 +93,7 @@ export default function StorageAdvisorPage() {
                 <TrendingUp className="w-5 h-5 text-blue-600" />
                 <h2 className="font-semibold text-gray-900">{t('price_forecast_days')}</h2>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
                 <div>
                   <p className="text-xs text-gray-500">{t('current_price')}</p>
                   <p className="text-xl font-bold text-gray-900">{formatCurrency(forecast.currentPrice)}</p>
@@ -141,7 +141,7 @@ export default function StorageAdvisorPage() {
                 {getDecisionLabel(storageData.recommendation)}
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
                 <div>
                   <p className="text-xs text-gray-500">{t('sell_now_qty')}</p>
                   <p className="text-lg font-bold text-green-700">{storageData.sellNowQuantity} {t('qtl')}</p>

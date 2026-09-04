@@ -61,9 +61,9 @@ export default function AdminMarketDataPage() {
 
   return (
     <div className="space-y-6 max-w-7xl">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center flex-shrink-0">
             <TrendingUp className="w-5 h-5 text-teal-600" />
           </div>
           <div>
@@ -73,7 +73,7 @@ export default function AdminMarketDataPage() {
             </p>
           </div>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary flex items-center gap-2">
+        <button onClick={() => setShowForm(!showForm)} className="btn-primary flex items-center gap-2 flex-shrink-0">
           <Plus className="w-4 h-4" /> Add Price Entry
         </button>
       </div>
@@ -97,7 +97,7 @@ export default function AdminMarketDataPage() {
               maxPrice: Number(form.maxPrice),
               arrivalQuantity: form.arrivalQuantity ? Number(form.arrivalQuantity) : undefined,
             });
-          }} className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          }} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <label className="label">Crop *</label>
               <select className="input" value={form.cropId} onChange={e => setForm({ ...form, cropId: e.target.value })} required>
@@ -136,7 +136,7 @@ export default function AdminMarketDataPage() {
               <input type="number" className="input" placeholder="500"
                 value={form.arrivalQuantity} onChange={e => setForm({ ...form, arrivalQuantity: e.target.value })} />
             </div>
-            <div className="col-span-2 md:col-span-3 flex gap-3">
+            <div className="col-span-1 sm:col-span-2 md:col-span-3 flex gap-3">
               <button type="submit" disabled={addPriceMutation.isPending} className="btn-primary flex-1 disabled:opacity-50">
                 {addPriceMutation.isPending ? 'Saving…' : 'Save Price Entry'}
               </button>
@@ -147,10 +147,10 @@ export default function AdminMarketDataPage() {
       )}
 
       {/* Chart */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
+      {/* <div className="card">
+        <div className="flex items-start sm:items-center justify-between mb-4 gap-3 flex-wrap">
           <h2 className="font-semibold text-gray-900">Price Trend (30 days)</h2>
-          <select className="input w-40" value={selectedCrop} onChange={e => setSelectedCrop(e.target.value)}>
+          <select className="input sm:w-40" value={selectedCrop} onChange={e => setSelectedCrop(e.target.value)}>
             <option value="">Select crop</option>
             {crops?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
@@ -173,14 +173,14 @@ export default function AdminMarketDataPage() {
             Select a crop to view price trend
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Latest prices table */}
       <div className="card">
         <h2 className="font-semibold text-gray-900 mb-4">Latest Prices by Mandi</h2>
         {pricesLoading ? <CardSkeleton lines={3} /> : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[540px]">
               <thead>
                 <tr className="border-b border-gray-100">
                   {['Crop', 'Mandi', 'District', 'Modal Price', 'Min', 'Max', 'Arrival', 'Date'].map(h => (

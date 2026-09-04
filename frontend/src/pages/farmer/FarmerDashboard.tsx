@@ -47,26 +47,26 @@ export default function FarmerDashboard() {
   return (
     <div className="space-y-6 max-w-7xl">
       {/* Welcome */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {t('welcome_greeting')}, {user?.name?.split(' ')[0]} 🙏
           </h1>
           <p className="text-gray-500 text-sm mt-1">{t('market_today')}</p>
         </div>
         <Link to="/farmer/ai-assistant"
-          className="btn-primary flex items-center gap-2 text-sm">
+          className="btn-primary flex items-center gap-2 text-sm flex-shrink-0">
           <Bot className="w-4 h-4" /> {t('ask_ai')}
         </Link>
       </div>
 
       {/* Income Summary Cards */}
       {incomeLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {[1,2,3,4].map(i => <CardSkeleton key={i} lines={2} />)}
         </div>
       ) : incomeData && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <div className="card">
             <p className="text-xs text-gray-500 mb-1">{t('total_crops')}</p>
             <p className="text-2xl font-bold text-gray-900">{incomeData.cropSummaries?.length || 0}</p>
@@ -94,7 +94,7 @@ export default function FarmerDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Today's Market */}
         <div className="lg:col-span-2">
           <div className="card">
@@ -181,7 +181,7 @@ export default function FarmerDashboard() {
       {/* Quick Actions */}
       <div>
         <h2 className="font-semibold text-gray-900 mb-3">{t('quick_actions')}</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3">
           {quickActions.map((action) => (
             <Link key={action.to} to={action.to}
               className="card p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow cursor-pointer text-center">

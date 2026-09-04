@@ -50,9 +50,9 @@ export default function AdminFarmersPage() {
       {/* Search */}
       <div className="card">
         <div className="relative">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-          <input
-            className="input pl-9 w-full max-w-sm"
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+              <input
+                className="input pl-9 w-full sm:max-w-sm"
             placeholder="Search by name, district, email…"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -64,7 +64,7 @@ export default function AdminFarmersPage() {
         <div className="space-y-3">{[1,2,3].map(i => <CardSkeleton key={i} lines={2} />)}</div>
       ) : (
         <div className="card overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-gray-100">
                 {['Name', 'District', 'Village', 'Phone', 'Email', 'Land (acres)', 'Status', 'Joined', 'Actions'].map(h => (

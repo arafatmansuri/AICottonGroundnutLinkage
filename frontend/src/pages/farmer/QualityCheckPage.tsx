@@ -122,9 +122,9 @@ export default function QualityCheckPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t('quality_check')} AI</h1>
-        <div className="flex items-center gap-2">
+      <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('quality_check')} AI</h1>
+        <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
           <div className="text-xs bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full border border-purple-200">
             AI Vision Analysis
           </div>
@@ -139,7 +139,7 @@ export default function QualityCheckPage() {
       <div className="card">
         <div className="mb-4">
           <label className="label">{t('crop_type')}</label>
-          <select className="input max-w-[200px] text-sm" value={cropType}
+          <select className="input w-full sm:max-w-[200px] text-sm" value={cropType}
             onChange={e => setCropType(e.target.value)}>
             {crops?.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
@@ -207,7 +207,7 @@ export default function QualityCheckPage() {
             {t('quality_result')}
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4">
             <div className="text-center p-4 bg-gray-50 rounded-xl">
               <p className="text-xs text-gray-500 mb-1">{t('estimated_grade')}</p>
               <div className={`inline-flex items-center gap-1 text-lg font-bold px-4 py-2 rounded-xl border ${gradeColors[result.estimatedGrade]}`}>
@@ -252,7 +252,7 @@ export default function QualityCheckPage() {
       {/* Info */}
       <div className="card bg-purple-50/30 border-purple-100">
         <h3 className="font-medium text-gray-800 mb-2">{t('what_ai_analyzes')}</h3>
-        <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
           <div>
             <p className="font-medium text-gray-700 mb-1">{t('cotton_checks')}:</p>
             <ul className="space-y-0.5">

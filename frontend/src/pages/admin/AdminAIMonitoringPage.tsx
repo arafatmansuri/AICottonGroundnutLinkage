@@ -21,7 +21,7 @@ export default function AdminAIMonitoringPage() {
 
   return (
     <div className="space-y-6 max-w-7xl">
-      <div className="flex items-center gap-3">
+      <div className="flex items-start sm:items-center gap-3 flex-wrap">
         <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
           <Bot className="w-5 h-5 text-indigo-600" />
         </div>
@@ -44,7 +44,7 @@ export default function AdminAIMonitoringPage() {
       ) : (
         <>
           {/* Agent status cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {(aiData?.agents || []).map((agent: any) => (
               <div key={agent.name} className="card hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-3">
@@ -145,7 +145,7 @@ export default function AdminAIMonitoringPage() {
           )}
 
           {/* Pipeline stats */}
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="card text-center">
               <Zap className="w-8 h-8 text-indigo-500 mx-auto mb-2" />
               <p className="text-2xl font-bold text-gray-900">{formatNumber(aiData?.totalRequests || 0)}</p>

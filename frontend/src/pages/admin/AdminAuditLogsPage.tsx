@@ -54,18 +54,18 @@ export default function AdminAuditLogsPage() {
       </div>
 
       {/* Filters */}
-      <div className="card flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="card flex flex-col sm:flex-row flex-wrap gap-3">
+        <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
           <input className="input pl-9 w-full" placeholder="Search user, entity, action…"
             value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <select className="input w-36" value={actionFilter} onChange={e => setActionFilter(e.target.value)}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <select className="input flex-1 min-w-[120px]" value={actionFilter} onChange={e => setActionFilter(e.target.value)}>
             {actions.map(a => <option key={a} value={a}>{a === 'ALL' ? 'All Actions' : a}</option>)}
           </select>
-          <select className="input w-40" value={entityFilter} onChange={e => setEntityFilter(e.target.value)}>
+          <select className="input flex-1 min-w-[140px]" value={entityFilter} onChange={e => setEntityFilter(e.target.value)}>
             {entities.map(e => <option key={e} value={e}>{e === 'ALL' ? 'All Entities' : e.replace(/_/g, ' ')}</option>)}
           </select>
         </div>
@@ -74,8 +74,8 @@ export default function AdminAuditLogsPage() {
       {isLoading ? (
         <div className="space-y-2">{[1,2,3,4,5].map(i => <CardSkeleton key={i} lines={1} />)}</div>
       ) : (
-        <div className="card overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="card overflow-x-auto -mx-0">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-gray-100">
                 {['Timestamp', 'User', 'Action', 'Entity Type', 'Entity ID', 'Details', 'IP'].map(h => (

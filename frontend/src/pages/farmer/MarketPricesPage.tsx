@@ -59,9 +59,9 @@ export default function MarketPricesPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-start sm:items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('market_prices')}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('market_prices')}</h1>
           <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />
             {dataUpdatedAt ? `${t('updated')} ${new Date(dataUpdatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : t('loading')}
@@ -83,13 +83,13 @@ export default function MarketPricesPage() {
           <Filter className="w-4 h-4 text-gray-500" />
           <span className="text-sm font-medium text-gray-700">{t('filter')}</span>
         </div>
-        <div className="flex gap-3 flex-wrap">
-          <select className="input max-w-[180px] text-sm" value={selectedCropId}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <select className="input text-sm w-full" value={selectedCropId}
             onChange={e => setSelectedCropId(e.target.value)}>
             <option value="">{t('all_crops_filter')}</option>
             {crops?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select className="input max-w-[180px] text-sm" value={selectedMandiId}
+          <select className="input text-sm w-full" value={selectedMandiId}
             onChange={e => setSelectedMandiId(e.target.value)}>
             <option value="">{t('all_mandis')}</option>
             {mandis?.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
@@ -120,13 +120,13 @@ export default function MarketPricesPage() {
       )}
 
       {/* Latest prices table */}
-      <div className="card">
+      <div className="card overflow-hidden">
         <h2 className="font-semibold text-gray-900 mb-4">{t('current_mandi_prices')}</h2>
         {latestPrices?.length === 0 ? (
           <p className="text-center text-gray-400 py-8">{t('no_price_data')}</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-6">
+            <table className="w-full text-sm min-w-[560px]">
               <thead>
                 <tr className="border-b border-gray-100">
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">{t('mandi')}</th>
@@ -141,15 +141,15 @@ export default function MarketPricesPage() {
               <tbody>
                 {latestPrices?.map((price: any) => (
                   <tr key={price.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium text-gray-800">{price.mandi?.name}</td>
-                    <td className="py-3 px-4 text-gray-600">{price.crop?.name}</td>
-                    <td className="py-3 px-4 text-right text-gray-600">{formatCurrency(price.minPrice)}</td>
-                    <td className="py-3 px-4 text-right font-semibold text-gray-900">{formatCurrency(price.modalPrice)}</td>
-                    <td className="py-3 px-4 text-right text-gray-600">{formatCurrency(price.maxPrice)}</td>
-                    <td className={`py-3 px-4 text-right font-medium ${getTrendColor(price.trend)}`}>
+                    <td className="py-3 px-4 font-medium text-gray-800 whitespace-nowrap">{price.mandi?.name}</td>
+                    <td className="py-3 px-4 text-gray-600 whitespace-nowrap">{price.crop?.name}</td>
+                    <td className="py-3 px-4 text-right text-gray-600 whitespace-nowrap">{formatCurrency(price.minPrice)}</td>
+                    <td className="py-3 px-4 text-right font-semibold text-gray-900 whitespace-nowrap">{formatCurrency(price.modalPrice)}</td>
+                    <td className="py-3 px-4 text-right text-gray-600 whitespace-nowrap">{formatCurrency(price.maxPrice)}</td>
+                    <td className={`py-3 px-4 text-right font-medium whitespace-nowrap ${getTrendColor(price.trend)}`}>
                       {getTrendIcon(price.trend)} {Math.abs(price.priceChangePct || 0).toFixed(1)}%
                     </td>
-                    <td className="py-3 px-4 text-right text-gray-400 text-xs">{formatDate(price.priceDate)}</td>
+                    <td className="py-3 px-4 text-right text-gray-400 text-xs whitespace-nowrap">{formatDate(price.priceDate)}</td>
                   </tr>
                 ))}
               </tbody>

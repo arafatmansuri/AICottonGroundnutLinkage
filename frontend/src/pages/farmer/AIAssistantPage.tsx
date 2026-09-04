@@ -587,9 +587,9 @@ export default function AIAssistantPage() {
   return (
     <div className="max-w-3xl space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">{t('ai_assistant', language)}</h1>
-        <div className="flex items-center gap-2">
+      <div className="flex items-start sm:items-center justify-between flex-wrap gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('ai_assistant', language)}</h1>
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full border border-purple-200 font-medium">
             Agentic AI — ReAct Loop
           </span>
@@ -602,9 +602,9 @@ export default function AIAssistantPage() {
       {/* Context selectors */}
       <div className="card p-4">
         <p className="text-xs font-medium text-gray-500 mb-2">{t('select_context')}</p>
-        <div className="flex gap-3 flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <select
-            className="input text-sm max-w-[200px]"
+            className="input text-sm w-full"
             value={selectedCropId}
             onChange={e => setSelectedCropId(e.target.value)}
           >
@@ -614,7 +614,7 @@ export default function AIAssistantPage() {
             ))}
           </select>
           <select
-            className="input text-sm max-w-[200px]"
+            className="input text-sm w-full"
             value={selectedFarmerCropId}
             onChange={e => setSelectedFarmerCropId(e.target.value)}
           >
@@ -630,7 +630,7 @@ export default function AIAssistantPage() {
 
       {/* Chat window */}
       <div className="card p-0 overflow-hidden">
-        <div className="h-[520px] overflow-y-auto p-4 space-y-4">
+        <div className="h-[400px] sm:h-[520px] overflow-y-auto p-4 space-y-4">
           {messages.map((msg, i) => (
             <div
               key={i}
@@ -690,10 +690,10 @@ export default function AIAssistantPage() {
         )}
 
         {/* Input bar */}
-        <div className="border-t border-gray-100 p-4 flex gap-3">
+        <div className="border-t border-gray-100 p-3 sm:p-4 flex gap-2 sm:gap-3">
           <input
             type="text"
-            className="input flex-1 text-sm"
+            className="input flex-1 text-sm min-w-0"
             placeholder={t('type_message', language)}
             value={input}
             onChange={e => setInput(e.target.value)}
@@ -702,7 +702,7 @@ export default function AIAssistantPage() {
           <button
             onClick={handleSend}
             disabled={queryMutation.isPending || !input.trim()}
-            className="btn-primary px-4 disabled:opacity-50"
+            className="btn-primary px-3 sm:px-4 disabled:opacity-50 flex-shrink-0"
           >
             <Send className="w-4 h-4" />
           </button>

@@ -36,7 +36,7 @@ export default function BuyerMarketplacePage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t('buyer_marketplace')}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('buyer_marketplace')}</h1>
         <p className="text-sm text-gray-500 mt-0.5">{offersData?.total || 0} {t('active_offers')}</p>
       </div>
 
@@ -46,7 +46,7 @@ export default function BuyerMarketplacePage() {
           <Filter className="w-4 h-4 text-gray-500" />
           <span className="font-medium text-sm text-gray-700">{t('filter_buyers')}</span>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <select className="input text-sm" value={filters.cropId}
             onChange={e => setFilters({ ...filters, cropId: e.target.value, page: 1 })}>
             <option value="">{t('all_crops_filter')}</option>
@@ -71,12 +71,12 @@ export default function BuyerMarketplacePage() {
         <div className="grid gap-4">
           {offersData?.offers?.map((offer: any) => (
             <div key={offer.id} className="card">
-              <div className="flex items-start justify-between">
-                <div>
+              <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
+                <div className="min-w-0">
                   <div className="flex items-center gap-3 mb-1 flex-wrap">
-                    <h3 className="font-semibold text-gray-900 text-lg">{offer.buyerProfile?.companyName}</h3>
+                    <h3 className="font-semibold text-gray-900 text-base sm:text-lg">{offer.buyerProfile?.companyName}</h3>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
                     <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{offer.district}</span>
                     <span className="flex items-center gap-1"><Wheat className="w-3.5 h-3.5" />{offer.crop?.name}</span>
                     <span className="flex items-center gap-1"><Package className="w-3.5 h-3.5" />{offer.minQuantity}–{offer.maxQuantity} {t('qtl')}</span>
@@ -87,8 +87,8 @@ export default function BuyerMarketplacePage() {
                     )}
                   </div>
                 </div>
-                <div className="text-right ml-4">
-                  <p className="text-2xl font-bold text-green-700">{formatCurrency(offer.offeredPrice)}</p>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-xl sm:text-2xl font-bold text-green-700">{formatCurrency(offer.offeredPrice)}</p>
                   <p className="text-xs text-gray-400">{t('per_quintal')}</p>
                   <p className="text-xs text-gray-500 mt-1">{t('grade')}: {offer.quality.replace('_', ' ')}</p>
                 </div>

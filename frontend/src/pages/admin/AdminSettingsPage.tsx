@@ -63,9 +63,9 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-6">
-        {/* Sidebar nav */}
-        <div className="space-y-1">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
+        {/* Sidebar nav — horizontal on mobile */}
+        <div className="flex md:flex-col gap-1 flex-wrap md:flex-nowrap">
           {sections.map(s => (
             <button key={s.id} onClick={() => setActiveSection(s.id as any)}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-left transition-colors ${
@@ -81,7 +81,7 @@ export default function AdminSettingsPage() {
           {activeSection === 'general' && (
             <div className="card space-y-4">
               <h2 className="font-semibold text-gray-900">General Settings</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Platform Name</label>
                   <input className="input" value={generalForm.platformName}
@@ -122,7 +122,7 @@ export default function AdminSettingsPage() {
                   Set <span className="font-mono bg-amber-100 px-1 rounded">AI_PROVIDER=GRANITE</span> in <span className="font-mono bg-amber-100 px-1 rounded">.env</span> for real IBM watsonx inference.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Storage Cost per Unit (₹)</label>
                   <input type="number" className="input" min="1" value={aiForm.storageCostPerUnit}
@@ -137,7 +137,7 @@ export default function AdminSettingsPage() {
               </div>
               <div>
                 <p className="label mb-2">Buyer Matching Score Weights (must sum to 100)</p>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="text-xs text-gray-500">Price Weight (%)</label>
                     <input type="number" className="input" min="0" max="100" value={aiForm.buyerMatchingWeightPrice}

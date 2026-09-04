@@ -129,9 +129,9 @@ export default function FarmerCropsPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t('my_crops')}</h1>
-        <button onClick={() => setShowAddForm(!showAddForm)} className="btn-primary flex items-center gap-2">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('my_crops')}</h1>
+        <button onClick={() => setShowAddForm(!showAddForm)} className="btn-primary flex items-center gap-2 flex-shrink-0">
           <Plus className="w-4 h-4" /> {t('add_crop')}
         </button>
       </div>
@@ -140,7 +140,7 @@ export default function FarmerCropsPage() {
       {showAddForm && (
         <div className="card border-green-200 bg-green-50/30">
           <h2 className="font-semibold text-gray-800 mb-4">{t('add_new_crop')}</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">{t('crop')} *</label>
               <select className="input" value={form.cropId} onChange={e => setForm({ ...form, cropId: e.target.value })} required>
@@ -216,17 +216,17 @@ export default function FarmerCropsPage() {
           {crops?.map((fc: any) => (
             <div key={fc.id} className="card hover:shadow-md transition-shadow">
               {/* Card header */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 bg-green-100 rounded-xl flex items-center justify-center">
                     <Wheat className="w-6 h-6 text-green-600" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{fc.crop?.name}</h3>
-                    <p className="text-sm text-gray-500">{fc.location}, {fc.district}</p>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900 truncate">{fc.crop?.name}</h3>
+                    <p className="text-sm text-gray-500 truncate">{fc.location}, {fc.district}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                   <QualityBadge quality={fc.quality} />
                   <button
                     onClick={() => editingId === fc.id ? setEditingId(null) : startEdit(fc)}
@@ -250,7 +250,7 @@ export default function FarmerCropsPage() {
               {editingId === fc.id ? (
                 <div className="mt-4 pt-4 border-t border-blue-100 bg-blue-50/30 rounded-xl p-4">
                   <h4 className="text-sm font-semibold text-gray-700 mb-3">Edit Crop Details</h4>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="label text-xs">{t('quantity_quintals')}</label>
                       <input type="number" className="input" min="0.1" step="0.1"
@@ -320,7 +320,7 @@ export default function FarmerCropsPage() {
               ) : (
                 <>
                   {/* Quantity summary */}
-                  <div className="grid grid-cols-3 gap-4 mt-4">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-4">
                     <div>
                       <p className="text-xs text-gray-500">{t('quantity_quintals')}</p>
                       <p className="font-semibold">{fc.quantity} {t('qtl')}</p>
@@ -337,7 +337,7 @@ export default function FarmerCropsPage() {
 
                   {/* Expanded details */}
                   {expandedId === fc.id && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-3 text-sm">
+                    <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-sm">
                       <div><span className="text-gray-500">{t('harvest_date_label')}</span> <span className="font-medium">{fc.harvestDate ? formatDate(fc.harvestDate) : '—'}</span></div>
                       <div><span className="text-gray-500">{t('storage_label')}</span> <span className="font-medium">{fc.storageStatus.replace(/_/g, ' ')}</span></div>
                       <div><span className="text-gray-500">{t('added_label')}</span> <span className="font-medium">{formatDate(fc.createdAt)}</span></div>

@@ -27,10 +27,10 @@ export default function IncomeDashboardPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <h1 className="text-2xl font-bold text-gray-900">{t('income_dashboard')}</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('income_dashboard')}</h1>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <div className="card">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center">
@@ -80,7 +80,7 @@ export default function IncomeDashboardPage() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Crop breakdown */}
         <div className="card">
           <h2 className="font-semibold text-gray-900 mb-4">{t('crop_portfolio')}</h2>

@@ -54,8 +54,8 @@ export default function AdminTransactionsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+      <div className="flex items-start sm:items-center gap-3 flex-wrap">
+        <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
           <ArrowLeftRight className="w-5 h-5 text-amber-600" />
         </div>
         <div>
@@ -65,7 +65,7 @@ export default function AdminTransactionsPage() {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: 'Total', value: data?.total || 0, color: 'bg-gray-50 text-gray-700' },
           { label: 'Completed', value: data?.completedCount || 0, color: 'bg-green-50 text-green-700' },
@@ -80,13 +80,13 @@ export default function AdminTransactionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="card flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="card flex flex-col sm:flex-row flex-wrap gap-3">
+        <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
           <input className="input pl-9 w-full" placeholder="Search crop, farmer, buyer…"
             value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <select className="input w-48" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+        <select className="input sm:w-48" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
           {statuses.map(s => <option key={s} value={s}>{s === 'ALL' ? 'All Statuses' : s.replace(/_/g, ' ')}</option>)}
         </select>
       </div>
@@ -95,7 +95,7 @@ export default function AdminTransactionsPage() {
         <div className="space-y-3">{[1,2,3].map(i => <CardSkeleton key={i} lines={3} />)}</div>
       ) : (
         <div className="card overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="border-b border-gray-100">
                 {['Crop', 'Farmer', 'Buyer', 'Qty (qtl)', 'Agreed Price', 'Transport', 'Net Realization', 'Status', 'Date', 'Actions'].map(h => (

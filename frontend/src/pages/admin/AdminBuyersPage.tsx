@@ -59,13 +59,13 @@ export default function AdminBuyersPage() {
       </div>
 
       {/* Filters */}
-      <div className="card flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="card flex flex-col sm:flex-row flex-wrap gap-3">
+        <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
           <input className="input pl-9 w-full" placeholder="Search company, contact, district…"
             value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <select className="input w-40" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+        <select className="input sm:w-40" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
           <option value="ALL">All Status</option>
           <option value="PENDING">Pending</option>
           <option value="VERIFIED">Verified</option>
@@ -74,7 +74,7 @@ export default function AdminBuyersPage() {
       </div>
 
       {/* Summary chips */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
           { label: 'Total Buyers', value: data?.total || 0, color: 'bg-blue-50 text-blue-700' },
           { label: 'Verified', value: data?.verifiedCount || 0, color: 'bg-green-50 text-green-700' },
@@ -91,7 +91,7 @@ export default function AdminBuyersPage() {
         <div className="space-y-3">{[1,2,3].map(i => <CardSkeleton key={i} lines={2} />)}</div>
       ) : (
         <div className="card overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-gray-100">
                 {['Company', 'Contact', 'District', 'Crop Interest', 'Offer Price', 'Status', 'Joined', 'Actions'].map(h => (
@@ -169,7 +169,7 @@ export default function AdminBuyersPage() {
                 {selected.verificationStatus}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div><p className="text-xs text-gray-400">Contact</p><p className="font-medium">{selected.contactName}</p></div>
               <div><p className="text-xs text-gray-400">District</p><p className="font-medium">{selected.district}</p></div>
               <div><p className="text-xs text-gray-400">Email</p><p className="font-medium text-xs">{selected.user?.email}</p></div>

@@ -38,8 +38,8 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">{t('transactions_title')}</h1>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('transactions_title')}</h1>
         <span className="text-sm text-gray-500">{data?.total || 0} {t('total')}</span>
       </div>
 
@@ -75,7 +75,7 @@ export default function TransactionsPage() {
                 </span>
               </div>
 
-              <div className="mt-3 grid grid-cols-4 gap-3 text-sm">
+              <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-sm">
                 <div>
                   <p className="text-xs text-gray-500">{t('gross')}</p>
                   <p className="font-medium">{formatCurrency(tx.agreedPrice)}/{t('qtl')}</p>
