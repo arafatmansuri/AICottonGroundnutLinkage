@@ -138,6 +138,12 @@ export const authApi = {
   logout: (): AR<null> => api.post('/auth/logout'),
   me: (): AR<User & { farmerProfile?: FarmerProfile; buyerProfile?: BuyerProfile }> =>
     api.get('/auth/me'),
+  changePassword: (data: { currentPassword: string; newPassword: string }): AR<null> =>
+    api.post('/auth/change-password', data),
+  forgotPassword: (email: string): AR<{ resetToken?: string }> =>
+    api.post('/auth/forgot-password', { email }),
+  resetPassword: (data: { token: string; newPassword: string }): AR<null> =>
+    api.post('/auth/reset-password', data),
 };
 
 // ── Market ────────────────────────────────────────────────────────────────────

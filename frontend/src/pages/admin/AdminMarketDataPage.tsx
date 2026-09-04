@@ -5,14 +5,10 @@ import { formatCurrency, formatDate } from '../../utils';
 import { CardSkeleton } from '../../components/common/LoadingSpinner';
 import { TrendingUp, Plus, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-} from 'recharts';
 
 export default function AdminMarketDataPage() {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [selectedCrop, setSelectedCrop] = useState('');
   const [form, setForm] = useState({
     cropId: '', mandiId: '', modalPrice: '', minPrice: '', maxPrice: '',
     arrivalQuantity: '', unit: 'QUINTAL', priceDate: new Date().toISOString().split('T')[0],
@@ -34,12 +30,6 @@ export default function AdminMarketDataPage() {
     refetchInterval: 60_000,
   });
 
-  const { data: history } = useQuery({
-    queryKey: ['adminPriceHistory', selectedCrop],
-    queryFn: () => marketApi.getPriceHistory(selectedCrop, undefined, 30).then(r => r.data.data),
-    enabled: !!selectedCrop,
-  });
-
   const addPriceMutation = useMutation({
     mutationFn: (data: any) => adminApi.addMarketPrice(data),
     onSuccess: () => {
@@ -52,12 +42,6 @@ export default function AdminMarketDataPage() {
     onError: (e: any) => toast.error(e.response?.data?.error?.message || 'Failed to add price'),
   });
 
-  const chartData = (history?.history || []).map((h: any) => ({
-    date: new Date(h.priceDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
-    modal: h.modalPrice,
-    min: h.minPrice,
-    max: h.maxPrice,
-  })).reverse();
 
   return (
     <div className="space-y-6 max-w-7xl">

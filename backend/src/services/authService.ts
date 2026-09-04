@@ -1,8 +1,9 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import prisma from '../database/client';
 import config from '../config';
-import { ConflictError, AuthenticationError, NotFoundError } from '../middleware/errorHandler';
+import { ConflictError, AuthenticationError, NotFoundError, ValidationError } from '../middleware/errorHandler';
 import { AuthUser } from '../middleware/auth';
 
 export interface RegisterInput {
@@ -144,4 +145,45 @@ export async function getCurrentUser(userId: string) {
   if (!user) throw new NotFoundError('User');
   const { passwordHash: _, ...safeUser } = user;
   return safeUser;
+}
+
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new NotFoundError('User');
+
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) throw new AuthenticationError('Current password is incorrect');
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+}
+
+// In-memory store for password reset tokens (production should use DB/Redis)
+const resetTokens = new Map<string, { userId: string; expiresAt: number }>();
+
+export async function forgotPassword(email: string): Promise<{ resetToken: string }> {
+  const user = await prisma.user.findUnique({ where: { email } });
+  // Always respond the same way to avoid email enumeration
+  if (!user) return { resetToken: '' };
+
+  const token = crypto.randomBytes(32).toString('hex');
+  resetTokens.set(token, { userId: user.id, expiresAt: Date.now() + 15 * 60 * 1000 }); // 15 min
+
+  // In production, send email here. For now return token directly.
+  return { resetToken: token };
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const entry = resetTokens.get(token);
+  if (!entry || entry.expiresAt < Date.now()) {
+    throw new ValidationError('Reset token is invalid or has expired');
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({ where: { id: entry.userId }, data: { passwordHash } });
+  resetTokens.delete(token);
 }

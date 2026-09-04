@@ -1,5 +1,5 @@
 import prisma from '../database/client';
-import { NotFoundError, BusinessLogicError } from '../middleware/errorHandler';
+import { NotFoundError } from '../middleware/errorHandler';
 
 export async function getFarmerProfile(userId: string) {
   const profile = await prisma.farmerProfile.findUnique({
@@ -13,10 +13,23 @@ export async function getFarmerProfile(userId: string) {
 export async function updateFarmerProfile(userId: string, data: Partial<{
   name: string; village: string; taluka: string; district: string;
   pincode: string; latitude: number; longitude: number; riskProfile: string;
+  phone: string;
 }>) {
   const profile = await prisma.farmerProfile.findUnique({ where: { userId } });
   if (!profile) throw new NotFoundError('Farmer profile');
-  return prisma.farmerProfile.update({ where: { userId }, data });
+
+  const { phone, ...profileData } = data;
+
+  // Update phone on the user record if provided
+  if (phone !== undefined) {
+    await prisma.user.update({ where: { id: userId }, data: { phone } });
+  }
+
+  return prisma.farmerProfile.update({
+    where: { userId },
+    data: profileData,
+    include: { user: { select: { email: true, phone: true, language: true, status: true } } },
+  });
 }
 
 export async function addFarmerCrop(userId: string, input: {

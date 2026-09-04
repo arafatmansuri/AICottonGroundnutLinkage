@@ -9,6 +9,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 // Auth pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 
 // Farmer pages
 import FarmerDashboard from './pages/farmer/FarmerDashboard';
@@ -19,6 +20,7 @@ import AIAssistantPage from './pages/farmer/AIAssistantPage';
 import IncomeDashboardPage from './pages/farmer/IncomeDashboardPage';
 import StorageAdvisorPage from './pages/farmer/StorageAdvisorPage';
 import QualityCheckPage from './pages/farmer/QualityCheckPage';
+import FarmerProfilePage from './pages/farmer/FarmerProfilePage';
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -66,6 +68,7 @@ function AppRoutes() {
       {/* Public */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/" element={<RootRedirect />} />
 
       {/* ── Farmer routes ── */}
@@ -81,6 +84,7 @@ function AppRoutes() {
               <Route path="quality" element={<QualityCheckPage />} />
               <Route path="income" element={<IncomeDashboardPage />} />
               <Route path="ai-assistant" element={<AIAssistantPage />} />
+              <Route path="profile" element={<FarmerProfilePage />} />
               <Route path="*" element={<Navigate to="/farmer/dashboard" replace />} />
             </Routes>
           </DashboardLayout>

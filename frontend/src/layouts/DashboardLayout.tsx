@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   LayoutDashboard, TrendingUp, Wheat, Users, Briefcase,
   Star, Wallet, Bot, LogOut, Menu, X,
-  Globe, ChevronDown, Leaf,
+  Globe, ChevronDown, Leaf, UserCircle,
 } from 'lucide-react';
 import type { RootState } from '../store';
 import { logout } from '../store/authSlice';
@@ -51,6 +51,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { to: '/farmer/quality', icon: Star, key: 'quality_check' },
     { to: '/farmer/income', icon: Wallet, key: 'income' },
     { to: '/farmer/ai-assistant', icon: Bot, key: 'ai_assistant' },
+    { to: '/farmer/profile', icon: UserCircle, key: 'my_profile' },
   ];
 
   const adminNav = [
@@ -196,17 +197,35 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
           <div className="flex-1" />
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <div className="text-sm font-medium text-gray-800">{user?.name}</div>
-              <div className="text-xs text-gray-400">{user?.email}</div>
+          {user?.role === 'FARMER' ? (
+            <Link
+              to="/farmer/profile"
+              title="My Profile"
+              className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-gray-50 transition-colors group"
+            >
+              <div className="text-right hidden sm:block">
+                <div className="text-sm font-medium text-gray-800 group-hover:text-green-700 transition-colors">{user?.name}</div>
+                <div className="text-xs text-gray-400">{user?.email}</div>
+              </div>
+              <div className="w-9 h-9 bg-green-100 group-hover:bg-green-200 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ring-2 ring-transparent group-hover:ring-green-400">
+                <span className="text-green-700 font-semibold text-sm">
+                  {user?.name?.charAt(0)?.toUpperCase()}
+                </span>
+              </div>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <div className="text-sm font-medium text-gray-800">{user?.name}</div>
+                <div className="text-xs text-gray-400">{user?.email}</div>
+              </div>
+              <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-green-700 font-semibold text-sm">
+                  {user?.name?.charAt(0)?.toUpperCase()}
+                </span>
+              </div>
             </div>
-            <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-green-700 font-semibold text-sm">
-                {user?.name?.charAt(0)?.toUpperCase()}
-              </span>
-            </div>
-          </div>
+          )}
         </header>
 
         {/* Page content */}
