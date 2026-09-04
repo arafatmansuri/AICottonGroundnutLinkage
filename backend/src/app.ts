@@ -3,8 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import path from 'path';
-import fs from 'fs';
 
 import config from './config';
 import prismaClient from './database/client';
@@ -48,11 +46,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // ─── Logging ──────────────────────────────────────────────────────────────────
 app.use(requestLogger);
-
-// ─── Static uploads ───────────────────────────────────────────────────────────
-const uploadDir = path.resolve(config.upload.dir);
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-app.use('/uploads', express.static(uploadDir));
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
