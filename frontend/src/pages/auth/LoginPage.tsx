@@ -1,30 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { Eye, EyeOff, Leaf, AlertCircle, Globe, ChevronDown } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { Eye, EyeOff, Leaf, AlertCircle } from 'lucide-react';
 import { setCredentials } from '../../store/authSlice';
-import { setLanguage } from '../../store/uiSlice';
 import { authApi } from '../../api';
-import type { RootState } from '../../store';
 import { useLanguage } from '../../hooks/useLanguage';
 import toast from 'react-hot-toast';
+import Navbar from '../../components/common/Navbar';
 
 export default function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { language } = useSelector((s: RootState) => s.ui);
   const { t } = useLanguage();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [langOpen, setLangOpen] = useState(false);
-
-  const languages = [
-    { code: 'en', label: 'English' },
-    { code: 'gu', label: 'ગુજરાતી' },
-    { code: 'hi', label: 'हिंदी' },
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,35 +54,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+      <Navbar />
+      <div className="flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-md">
-        {/* Language picker */}
-        <div className="flex justify-end mb-4 relative">
-          <button
-            onClick={() => setLangOpen(!langOpen)}
-            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800 bg-white border border-gray-200 rounded-xl px-3 py-1.5"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>{languages.find(l => l.code === language)?.label}</span>
-            <ChevronDown className="w-3.5 h-3.5" />
-          </button>
-          {langOpen && (
-            <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-10 min-w-[120px]">
-              {languages.map(lang => (
-                <button
-                  key={lang.code}
-                  onClick={() => { dispatch(setLanguage(lang.code as any)); setLangOpen(false); }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-green-50 hover:text-green-700 ${
-                    language === lang.code ? 'bg-green-50 text-green-700 font-medium' : ''
-                  }`}
-                >
-                  {lang.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -168,6 +134,7 @@ export default function LoginPage() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Leaf, AlertCircle, ArrowLeft } from 'lucide-react';
 import { authApi } from '../../api';
 import toast from 'react-hot-toast';
+import Navbar from '../../components/common/Navbar';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -44,21 +45,26 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-          <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Invalid Reset Link</h2>
-          <p className="text-sm text-gray-500 mb-6">This link is missing a reset token. Please request a new one.</p>
-          <Link to="/forgot-password" className="text-green-600 hover:underline text-sm font-medium">
-            Request a new reset link
-          </Link>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+        <Navbar />
+        <div className="flex items-center justify-center p-4 py-12">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+            <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">Invalid Reset Link</h2>
+            <p className="text-sm text-gray-500 mb-6">This link is missing a reset token. Please request a new one.</p>
+            <Link to="/forgot-password" className="text-green-600 hover:underline text-sm font-medium">
+              Request a new reset link
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+      <Navbar />
+      <div className="flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -116,6 +122,7 @@ export default function ResetPasswordPage() {
             </button>
           </form>
         </div>
+      </div>
       </div>
     </div>
   );

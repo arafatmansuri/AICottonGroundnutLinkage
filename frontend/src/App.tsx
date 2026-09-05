@@ -56,14 +56,6 @@ function ProtectedRoute({
   return <>{children}</>;
 }
 
-function RootRedirect() {
-  const { isAuthenticated, user } = useSelector((s: RootState) => s.auth);
-  if (!isAuthenticated) return <Navigate to="/" replace />;
-  if (user?.role === 'FARMER') return <Navigate to="/farmer/dashboard" replace />;
-  if (user?.role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
-  return <Navigate to="/" />;
-}
-
 function AppRoutes() {
   return (
     <Routes>
@@ -73,7 +65,6 @@ function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/" element={<RootRedirect />} />
 
       {/* ── Farmer routes ── */}
       <Route path="/farmer/*" element={

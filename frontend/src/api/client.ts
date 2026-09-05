@@ -16,12 +16,13 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Refresh on 401
+// Refresh on 401 (skip auth endpoints to let their errors propagate normally)
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    const isAuthEndpoint = original?.url?.startsWith('/auth/');
+    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       try {
         const refreshToken = localStorage.getItem('refreshToken');

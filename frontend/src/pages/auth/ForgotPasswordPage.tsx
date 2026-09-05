@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Leaf, ArrowLeft, Mail } from 'lucide-react';
 import { authApi } from '../../api';
 import toast from 'react-hot-toast';
+import Navbar from '../../components/common/Navbar';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -27,7 +28,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+      <Navbar />
+      <div className="flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -96,6 +99,7 @@ export default function ForgotPasswordPage() {
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
