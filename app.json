@@ -1,0 +1,139 @@
+{
+  "name": "kisanmitra-ai",
+  "displayName": "KisanMitra AI",
+  "description": "AI-Powered Cotton & Groundnut Market Linkage Platform — helps Indian farmers decide where to sell, to whom, when, and at what price.",
+  "version": "1.0.0",
+  "homepage": "https://kisanmitra-gls.vercel.app",
+  "keywords": [
+    "agritech",
+    "ai",
+    "ibm-granite",
+    "watsonx",
+    "cotton",
+    "groundnut",
+    "farmers",
+    "market-linkage",
+    "india"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arafatmansuri/AICottonGroundnutLinkage"
+  },
+  "license": "MIT",
+  "stack": {
+    "frontend": {
+      "framework": "React",
+      "version": "19",
+      "language": "TypeScript",
+      "buildTool": "Vite",
+      "styling": "Tailwind CSS v4",
+      "stateManagement": "Redux Toolkit",
+      "dataFetching": "TanStack React Query v5",
+      "directory": "frontend"
+    },
+    "backend": {
+      "runtime": "Node.js",
+      "minimumNodeVersion": "18",
+      "language": "TypeScript",
+      "framework": "Express.js",
+      "orm": "Prisma",
+      "database": "PostgreSQL",
+      "directory": "backend"
+    },
+    "ai": {
+      "provider": "IBM watsonx.ai",
+      "model": "ibm/granite-4-h-small",
+      "endpoint": "https://us-south.ml.cloud.ibm.com",
+      "pattern": "ReAct (Reasoning + Acting) with tool calling",
+      "fallback": "MockAIProvider (deterministic)"
+    }
+  },
+  "scripts": {
+    "backend:dev": "cd backend && npm run dev",
+    "backend:build": "cd backend && npm run build",
+    "backend:start": "cd backend && npm run start",
+    "backend:test": "cd backend && npm test",
+    "backend:seed": "cd backend && npm run db:seed",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "frontend:preview": "cd frontend && npm run preview"
+  },
+  "env": {
+    "required": [
+      "DATABASE_URL",
+      "JWT_SECRET",
+      "JWT_REFRESH_SECRET"
+    ],
+    "optional": [
+      "IBM_GRANITE_API_KEY",
+      "IBM_GRANITE_ENDPOINT",
+      "IBM_GRANITE_MODEL",
+      "IBM_WATSONX_PROJECT_ID",
+      "AI_PROVIDER",
+      "MARKET_DATA_PROVIDER",
+      "CORS_ORIGIN",
+      "MAILER_USER",
+      "MAILER_PASS",
+      "FRONTEND_URL",
+      "LOG_LEVEL",
+      "UPLOAD_DIR",
+      "MAX_FILE_SIZE_MB",
+      "STORAGE_PROVIDER"
+    ],
+    "defaults": {
+      "PORT": "5000",
+      "NODE_ENV": "development",
+      "AI_PROVIDER": "MOCK",
+      "MARKET_DATA_PROVIDER": "MOCK",
+      "STORAGE_PROVIDER": "LOCAL",
+      "LOG_LEVEL": "info"
+    }
+  },
+  "deployment": {
+    "vercel": {
+      "backend": "backend/vercel.json",
+      "frontend": "frontend/vercel.json"
+    },
+    "healthCheck": "/health",
+    "twelveFactorCompliant": true,
+    "dockerReady": true
+  },
+  "features": [
+    "Real-time mandi price tracking (Cotton & Groundnut)",
+    "IBM Granite ReAct agentic pipeline with tool calling",
+    "MandiPriceForecastingAgent — 7-day price forecast",
+    "BuyerMatchingAgent — ranked buyers by net realization",
+    "StorageSellingAdvisorAgent — sell vs store risk analysis",
+    "QualityGradingAgent — AI-assisted visual crop grading",
+    "Verified buyer marketplace",
+    "Net price calculation (gross price minus transport + storage costs)",
+    "Income & portfolio dashboard",
+    "Multilingual UI — English, Hindi, Gujarati",
+    "Role-based access control — Farmer / Buyer / Admin",
+    "Password reset via email (Nodemailer)",
+    "JWT access + refresh token authentication",
+    "Admin buyer verification workflow",
+    "AI monitoring dashboard"
+  ],
+  "roles": {
+    "farmer": {
+      "description": "Crop owner who lists inventory, gets AI recommendations, and browses buyers",
+      "demoEmail": "ramesh@farmer.com",
+      "demoPassword": "farmer123"
+    },
+    "buyer": {
+      "description": "Verified commodity purchaser who posts offers and contacts farmers",
+      "demoEmail": "shreeji@buyer.com",
+      "demoPassword": "buyer123"
+    },
+    "admin": {
+      "description": "Platform administrator who verifies buyers and monitors AI agents",
+      "demoEmail": "admin@kisanmitra.ai",
+      "demoPassword": "admin123"
+    }
+  },
+  "ports": {
+    "backend": 5000,
+    "frontend": 5173
+  }
+}

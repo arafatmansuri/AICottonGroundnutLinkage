@@ -16,14 +16,15 @@ KisanMitra AI is a full-stack, production-quality web platform that transforms m
               ┌────────────┴────────────┐
               │                         │
          FRONTEND                    BACKEND
-         React + TS               Node.js + TS
-         Tailwind CSS              REST APIs
-         React Query              Business Logic
-         Redux Toolkit            PostgreSQL (Prisma)
+         React 19 + TS             Node.js + TS
+         Tailwind CSS v4            REST APIs
+         TanStack Query             Business Logic
+         Redux Toolkit              PostgreSQL (Prisma)
               │                         │
               └────────────┬────────────┘
                            │
                      AI ORCHESTRATOR
+                     (ReAct Loop — up to 6 iterations)
                            │
          ┌─────────────────┼─────────────────┐
     MandiForecasting   BuyerMatching   StorageAdvisor
@@ -31,7 +32,8 @@ KisanMitra AI is a full-stack, production-quality web platform that transforms m
                            │
                      QualityGrading + IncomeAnalysis
                            │
-                   IBM Granite LLM (or Mock)
+                   IBM Granite (granite-4-h-small)
+                   via watsonx.ai Chat API + Tool Calling
                            │
                    Final Recommendation
 ```
@@ -39,9 +41,9 @@ KisanMitra AI is a full-stack, production-quality web platform that transforms m
 ### Data Flow
 
 ```
-Frontend → API → Validation → Controller → Service →
-Business Logic → Database/AI Agent → Structured Result →
-Granite (Explanation) → API Response → React Query → UI
+Frontend → API → Zod Validation → Controller → Service →
+Business Logic → Database / AI Agent (tool call) → Structured Result →
+Granite Reasoning Layer (explanation) → API Response → React Query → UI
 ```
 
 ---
@@ -49,43 +51,48 @@ Granite (Explanation) → API Response → React Query → UI
 ## 📦 Technology Stack
 
 ### Frontend
-| Technology | Purpose |
-|---|---|
-| React 19 + TypeScript | UI framework |
-| Tailwind CSS v4 | Styling |
-| React Router | Client-side routing |
-| TanStack React Query | Server state / API caching |
-| Redux Toolkit | Client state (auth, language, UI) |
-| Axios | HTTP client |
-| Recharts | Data visualizations |
-| React Hot Toast | Notifications |
-| Lucide React | Icons |
+| Technology | Version | Purpose |
+|---|---|---|
+| React | 19 | UI framework |
+| TypeScript | ~6.0 | Type safety |
+| Tailwind CSS | v4 | Styling |
+| React Router | v7 | Client-side routing |
+| TanStack React Query | v5 | Server state / API caching |
+| Redux Toolkit | v2 | Client state (auth, language, UI) |
+| Axios | v1 | HTTP client |
+| Recharts | v3 | Data visualizations |
+| React Hot Toast | v2 | Notifications |
+| Lucide React | v1 | Icons |
+| Vite | v8 | Build tool |
 
 ### Backend
-| Technology | Purpose |
-|---|---|
-| Node.js + TypeScript | Runtime |
-| Express.js | REST API framework |
-| Prisma ORM | Database access layer |
-| PostgreSQL | Primary database |
-| JWT | Authentication |
-| bcryptjs | Password hashing |
-| Zod | Request validation |
-| Winston | Structured logging |
-| Helmet + CORS | Security headers |
-| Express Rate Limit | Rate limiting |
-| Multer | File upload handling |
+| Technology | Version | Purpose |
+|---|---|---|
+| Node.js | 18+ | Runtime |
+| TypeScript | ^5.9 | Type safety |
+| Express.js | ^4.18 | REST API framework |
+| Prisma ORM | ^5.7 | Database access layer |
+| PostgreSQL | 14+ | Primary database |
+| JWT | — | Authentication (access + refresh tokens) |
+| bcryptjs | — | Password hashing (cost factor 12) |
+| Zod | ^3.22 | Request validation |
+| Winston | ^3.11 | Structured JSON logging |
+| Helmet + CORS | — | Security headers |
+| Express Rate Limit | — | Rate limiting |
+| Multer | — | File upload handling |
+| Nodemailer | — | Password reset emails |
+| node-cron | — | Scheduled jobs |
 
 ### AI Stack
 | Component | Purpose |
 |---|---|
-| MandiPriceForecastingAgent | Historical trend analysis & price forecast |
-| BuyerMatchingAgent | Match farmers with ranked buyers by net realization |
-| StorageSellingAdvisorAgent | Sell vs store decision with risk analysis |
-| QualityGradingAgent | AI-assisted crop quality assessment |
-| AIOrchestrator | Intent detection + multi-agent pipeline |
-| IBM Granite (GraniteAIProvider) | NLP reasoning & multilingual response |
-| MockAIProvider | Fallback when Granite is unavailable |
+| `MandiPriceForecastingAgent` | Historical trend analysis & price forecast |
+| `BuyerMatchingAgent` | Match farmers with ranked buyers by net realization |
+| `StorageSellingAdvisorAgent` | Sell vs store decision with risk analysis |
+| `QualityGradingAgent` | AI-assisted crop quality assessment |
+| `AIOrchestrator` | Intent detection + ReAct multi-agent pipeline |
+| `GraniteAIProvider` | IBM watsonx.ai Chat API with tool calling (`granite-4-h-small`) |
+| `MockAIProvider` | Deterministic fallback when Granite is unavailable |
 
 ---
 
@@ -98,21 +105,24 @@ project-root/
 │   ├── src/
 │   │   ├── agents/         # AI agents (forecasting, matching, storage, quality)
 │   │   ├── ai/             # AIProvider abstraction (Granite + Mock)
-│   │   ├── orchestrator/   # AIOrchestrator — multi-agent pipeline
+│   │   ├── orchestrator/   # AIOrchestrator — ReAct multi-agent pipeline
 │   │   ├── config/         # Environment configuration
 │   │   ├── controllers/    # Route handlers (thin)
 │   │   ├── routes/         # Express routers
 │   │   ├── services/       # Business logic
-│   │   ├── middleware/     # Auth, error handling, logging
+│   │   ├── middleware/      # Auth, error handling, logging
 │   │   ├── validators/     # Zod schemas
-│   │   ├── database/       # Prisma client + seed
+│   │   ├── database/       # Prisma client + seed scripts
 │   │   ├── utils/          # Logger
 │   │   └── server.ts       # Entry point
+│   ├── api/
+│   │   └── index.ts        # Vercel serverless entry point
 │   ├── prisma/
 │   │   └── schema.prisma   # Full normalized DB schema
 │   ├── tests/
 │   │   └── businessLogic.test.ts
 │   ├── .env.example
+│   ├── vercel.json
 │   └── package.json
 │
 ├── frontend/
@@ -132,9 +142,11 @@ project-root/
 │   │   ├── i18n/           # English / Hindi / Gujarati translations
 │   │   └── App.tsx         # Routes + providers
 │   ├── vite.config.ts
+│   ├── vercel.json
 │   └── package.json
 │
-└── master-prompt.md
+├── app.json                # App metadata & deployment manifest
+└── readme.md
 ```
 
 ---
@@ -156,25 +168,40 @@ JWT_REFRESH_SECRET=your-super-secret-refresh-key
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 
-# IBM watsonx.ai (optional — Mock provider used if empty)
-IBM_GRANITE_API_KEY=
+# IBM watsonx.ai — Granite ReAct agent
+# AI_PROVIDER=GRANITE enables the full tool-calling loop (up to 6 iterations).
+# Falls back to MOCK automatically if the Granite API is unreachable.
+IBM_GRANITE_API_KEY=your-ibm-cloud-api-key-here
 IBM_GRANITE_ENDPOINT=https://us-south.ml.cloud.ibm.com
-IBM_GRANITE_MODEL=ibm/granite-13b-instruct-v2
-IBM_WATSONX_PROJECT_ID=
-
-# Market data (MOCK by default)
-MARKET_DATA_PROVIDER=MOCK
+IBM_GRANITE_MODEL=ibm/granite-4-h-small
+IBM_WATSONX_PROJECT_ID=your-watsonx-project-id-here
 
 # AI Provider (MOCK or GRANITE)
 AI_PROVIDER=MOCK
 
+# Market data (MOCK by default)
+MARKET_DATA_PROVIDER=MOCK
+
 # File uploads
+STORAGE_PROVIDER=LOCAL
 UPLOAD_DIR=./uploads
 MAX_FILE_SIZE_MB=10
 
+# Email (password reset)
+MAILER_USER=you@gmail.com
+MAILER_PASS=your-gmail-app-password
+FRONTEND_URL=http://localhost:5173
+
 # CORS
 CORS_ORIGIN=http://localhost:5173
+
+# Logging
+LOG_LEVEL=info
 ```
+
+> **IBM Granite note:** `IBM_GRANITE_API_KEY` is an IBM Cloud API key, not a direct Bearer token.
+> The backend exchanges it for an IAM access token automatically via `POST https://iam.cloud.ibm.com/identity/token`.
+> Use `ibm/granite-4-h-small` (us-south / eu-de only) or `ibm/granite-3-8b-instruct` (all regions).
 
 ---
 
@@ -264,6 +291,8 @@ Authorization: Bearer <access_token>
 | POST | /auth/register | Register farmer or buyer |
 | POST | /auth/login | Login |
 | POST | /auth/refresh | Refresh access token |
+| POST | /auth/forgot-password | Send password reset email |
+| POST | /auth/reset-password | Reset password via token |
 | GET | /auth/me | Get current user |
 
 #### Market Intelligence
@@ -323,7 +352,7 @@ GET /health
 ## 🤖 AI Architecture
 
 ### Intent Detection
-The orchestrator first detects the farmer's intent from natural language:
+The orchestrator detects the farmer's intent from natural language:
 - `SELL_VS_STORE` — should I sell or hold?
 - `FIND_BUYERS` — find buyers for my crop
 - `MARKET_PRICE` — current market prices
@@ -331,24 +360,25 @@ The orchestrator first detects the farmer's intent from natural language:
 - `INCOME` — income analysis
 - `GENERAL` — general query
 
-### Agent Pipeline
+### ReAct Agent Pipeline
 ```
 Farmer Query
-  → Intent Detection (Granite / Mock)
+  → Intent Detection (Granite tool calling / Mock)
   → Context Retrieval (farmer profile, crop, district)
-  → MandiPriceForecastingAgent
-  → BuyerMatchingAgent (net price scoring)
-  → StorageSellingAdvisorAgent (SELL_NOW / STORE / SELL_PARTIALLY)
+  → [Tool call] MandiPriceForecastingAgent
+  → [Tool call] BuyerMatchingAgent  (net price scoring)
+  → [Tool call] StorageSellingAdvisorAgent (SELL_NOW / STORE / SELL_PARTIALLY)
   → Structured Results (deterministic)
   → Granite Reasoning Layer (explanation generation)
-  → Database (AIRequest + AIRecommendation saved)
+  → Database (AIRequest + AIRecommendation persisted)
   → Frontend
 ```
 
 ### IBM Granite Integration
 Set `AI_PROVIDER=GRANITE` and configure `IBM_GRANITE_*` env vars.
-The `GraniteAIProvider` calls watsonx.ai text generation API.
-If unavailable, `MockAIProvider` is the automatic fallback with no code changes needed.
+`GraniteAIProvider` calls the watsonx.ai Chat API (`/ml/v1/text/chat`) with three tool definitions.
+The ReAct loop runs up to **6 iterations**, invoking specialist agents before synthesising the final answer.
+If the Granite API is unreachable, `MockAIProvider` is the automatic fallback — no code changes needed.
 
 ### Safety Rules
 - AI never invents market prices, buyers, or transactions
@@ -364,7 +394,7 @@ The platform supports **English**, **Hindi**, and **Gujarati**.
 
 - Language selector in the sidebar
 - All navigation labels translated
-- AI responses can be generated in the selected language
+- AI responses generated in the selected language
 - Farmers can ask questions in Gujarati:
   > "મારો કપાસ અત્યારે વેચવો કે થોડા દિવસ રોકવો?"
 
@@ -389,11 +419,11 @@ npm test
 
 ## 🔒 Security
 
-- **JWT** access + refresh token pair with short expiry
+- **JWT** access + refresh token pair with short expiry (15 min / 7 day)
 - **bcrypt** password hashing (cost factor 12)
 - **Role-based authorization** — every protected endpoint validates role server-side
 - **Zod validation** on all request bodies
-- **Rate limiting** — 300 req/15min general, 20 req/15min auth
+- **Rate limiting** — 300 req / 15 min general, 20 req / 15 min auth
 - **Helmet** security headers
 - **CORS** configured per environment
 - **File validation** — type + size enforced before processing
@@ -418,22 +448,33 @@ npm run preview  # preview production build
 
 ---
 
+## ☁️ Deployment
+
+Both `frontend/` and `backend/` ship with a `vercel.json` for Vercel deployments:
+
+- **Backend** — served via `@vercel/node` from `api/index.ts` (serverless)
+- **Frontend** — SPA rewrites to `index.html` via Vercel Edge Network
+
+For non-Vercel hosts (IBM Code Engine, Railway, Render, etc.) use the standard `npm run build` + `npm run start` flow. The app follows 12-factor principles — all configuration is environment-variable-driven.
+
+---
+
 ## 📊 Demo Scenario (Hackathon Judge Flow)
 
 1. **Login as Farmer** (ramesh@farmer.com / farmer123)
-2. View **Dashboard** — see cotton prices, crop inventory, AI recommendation
-3. Go to **Market Prices** — see 30-day price chart across mandis
+2. View **Dashboard** — cotton prices, crop inventory, AI recommendation
+3. Go to **Market Prices** — 30-day price chart across mandis
 4. Go to **My Crops** — view/add crop inventory
 5. Go to **Buyers** — browse verified buyer marketplace
 6. Go to **Sell or Store?** — get AI forecast + recommendation
 7. Go to **AI Assistant** — ask "Should I sell my cotton now?"
-8. See **multiple AI agents** working (forecasting, matching, storage)
+8. Observe **multiple AI agents** working (forecasting, matching, storage advisor)
 9. Go to **Quality Check** — upload crop image for AI grading
-10. Go to **Income Dashboard** — see portfolio value breakdown
+10. Go to **Income Dashboard** — portfolio value breakdown
 11. **Login as Buyer** (shreeji@buyer.com / buyer123) — post purchase offer
 12. **Login as Admin** (admin@kisanmitra.ai / admin123)
-13. Go to **Admin Dashboard → Buyers** — verify a buyer
-14. Go to **AI Monitor** — see agent execution stats
+13. **Admin → Buyers** — verify a pending buyer
+14. **Admin → AI Monitor** — view agent execution stats
 
 ---
 
@@ -454,8 +495,9 @@ npm run preview  # preview production build
 - Docker-ready (containerize with standard Node.js Dockerfile)
 - Health endpoint: `GET /health`
 - Structured JSON logging (Winston)
-- IBM Granite integration via environment variables
+- IBM Granite integration via `IBM_GRANITE_*` environment variables
 - Stateless REST API (scales horizontally)
+- IAM token exchange handled automatically inside `GraniteAIProvider`
 
 ---
 
