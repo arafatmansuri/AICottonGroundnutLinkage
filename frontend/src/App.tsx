@@ -23,6 +23,7 @@ import IncomeDashboardPage from './pages/farmer/IncomeDashboardPage';
 import StorageAdvisorPage from './pages/farmer/StorageAdvisorPage';
 import QualityCheckPage from './pages/farmer/QualityCheckPage';
 import FarmerProfilePage from './pages/farmer/FarmerProfilePage';
+import NotificationsPage from './pages/farmer/NotificationsPage';
 
 // Buyer pages
 import BuyerDashboard from './pages/buyer/BuyerDashboard';
@@ -34,6 +35,7 @@ import BuyerProfilePage from './pages/buyer/BuyerProfilePage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminFarmersPage from './pages/admin/AdminFarmersPage';
 import AdminBuyersPage from './pages/admin/AdminBuyersPage';
+import AdminCropsPage from './pages/admin/AdminCropsPage';
 import AdminMarketDataPage from './pages/admin/AdminMarketDataPage';
 
 const queryClient = new QueryClient({
@@ -87,6 +89,7 @@ function AppRoutes() {
               <Route path="income" element={<IncomeDashboardPage />} />
               <Route path="ai-assistant" element={<AIAssistantPage />} />
               <Route path="profile" element={<FarmerProfilePage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
               <Route path="*" element={<Navigate to="/farmer/dashboard" replace />} />
             </Routes>
           </DashboardLayout>
@@ -116,6 +119,7 @@ function AppRoutes() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="farmers" element={<AdminFarmersPage />} />
               <Route path="buyers" element={<AdminBuyersPage />} />
+              <Route path="crops" element={<AdminCropsPage />} />
               <Route path="market-data" element={<AdminMarketDataPage />} />
               <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
             </Routes>

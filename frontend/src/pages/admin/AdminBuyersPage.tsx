@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../api';
-import { formatCurrency, formatDate } from '../../utils';
+import { formatDate } from '../../utils';
 import { CardSkeleton } from '../../components/common/LoadingSpinner';
 import { Briefcase, Search, ShieldCheck, ShieldX, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -94,7 +94,7 @@ export default function AdminBuyersPage() {
           <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-gray-100">
-                {['Company', 'Contact', 'District', 'Crop Interest', 'Offer Price', 'Status', 'Joined', 'Actions'].map(h => (
+                {['Company', 'Contact', 'District', 'Email', 'Status', 'Joined', 'Actions'].map(h => (
                   <th key={h} className="text-left py-3 px-4 text-gray-500 font-medium text-xs uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -112,8 +112,7 @@ export default function AdminBuyersPage() {
                   </td>
                   <td className="py-3 px-4 text-gray-600">{b.contactName}</td>
                   <td className="py-3 px-4 text-gray-500">{b.district}</td>
-                  <td className="py-3 px-4 text-gray-500 text-xs">{b.cropInterest || '—'}</td>
-                  <td className="py-3 px-4 text-gray-700">{b.offers?.[0] ? formatCurrency(b.offers[0].offeredPrice) : '—'}</td>
+                  <td className="py-3 px-4 text-gray-500 text-xs">{b.user?.email || '—'}</td>
                   <td className="py-3 px-4">
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge(b.verificationStatus)}`}>
                       {b.verificationStatus}
@@ -143,7 +142,7 @@ export default function AdminBuyersPage() {
                 </tr>
               ))}
               {buyers.length === 0 && (
-                <tr><td colSpan={8} className="py-8 text-center text-gray-400">No buyers found</td></tr>
+                <tr><td colSpan={7} className="py-8 text-center text-gray-400">No buyers found</td></tr>
               )}
             </tbody>
           </table>

@@ -224,6 +224,7 @@ export const i18n: Record<string, Record<string, string>> = {
     mark_in_progress: 'Mark In Progress',
     complete: 'Complete',
     // Notifications
+    notifications: 'Notifications',
     notifications_title: 'Notifications',
     mark_all_read: 'Mark all read',
     no_notifications: 'No notifications',

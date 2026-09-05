@@ -292,10 +292,18 @@ export const notificationApi = {
 
 export interface AdminBuyerParams extends PaginationParams {
   status?: string;
+  verificationStatus?: string;
 }
 
 export interface AdminFarmerParams extends PaginationParams {
   district?: string;
+}
+
+export interface AdminCropParams extends PaginationParams {
+  cropId?: string;
+  district?: string;
+  quality?: string;
+  isActive?: boolean;
 }
 
 export const adminApi = {
@@ -308,6 +316,8 @@ export const adminApi = {
     api.get('/admin/buyers', { params }),
   verifyBuyer: (id: string, status: string, notes?: string): AR<BuyerProfile> =>
     api.patch(`/admin/buyers/${id}/verify`, { status, notes }),
+  getCrops: (params: AdminCropParams): PAR<FarmerCrop> =>
+    api.get('/admin/crops', { params }),
   getTransactions: (params: PaginationParams): PAR<Transaction> =>
     api.get('/admin/transactions', { params }),
   resolveDispute: (id: string, action: string): AR<Transaction> =>

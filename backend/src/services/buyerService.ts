@@ -117,11 +117,13 @@ export async function getMarketplaceOffers(params: {
             companyName: true,
             contactName: true,
             district: true,
+            state: true,
             verificationStatus: true,
             rating: true,
             totalTransactions: true,
             latitude: true,
             longitude: true,
+            user: { select: { phone: true, email: true } },
           },
         },
       },
@@ -185,7 +187,10 @@ export async function searchFarmerCrops(params: {
 // ── Send interest notification to farmer about their crop ────────────────────
 
 export async function sendCropInterest(buyerUserId: string, farmerCropId: string, message?: string) {
-  const buyerProfile = await prisma.buyerProfile.findUnique({ where: { userId: buyerUserId } });
+  const buyerProfile = await prisma.buyerProfile.findUnique({
+    where: { userId: buyerUserId },
+    include: { user: { select: { email: true, phone: true } } },
+  });
   if (!buyerProfile) throw new NotFoundError('Buyer profile');
 
   const farmerCrop = await prisma.farmerCrop.findUnique({
@@ -225,6 +230,9 @@ export async function sendCropInterest(buyerUserId: string, farmerCropId: string
         farmerCropId,
         companyName: buyerProfile.companyName,
         contactName: buyerProfile.contactName,
+        verificationStatus: buyerProfile.verificationStatus,
+        email: (buyerProfile as any).user?.email ?? null,
+        phone: (buyerProfile as any).user?.phone ?? null,
       },
     },
   });

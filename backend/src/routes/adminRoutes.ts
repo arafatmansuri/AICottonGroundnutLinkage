@@ -46,7 +46,7 @@ router.get('/farmers', async (req: Request, res: Response, next: NextFunction) =
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
     const skip = (page - 1) * limit;
-    const [farmers, total] = await Promise.all([
+    const [data, total] = await Promise.all([
       prisma.farmerProfile.findMany({
         skip, take: limit,
         include: { user: { select: { email: true, status: true, createdAt: true } } },
@@ -54,7 +54,7 @@ router.get('/farmers', async (req: Request, res: Response, next: NextFunction) =
       }),
       prisma.farmerProfile.count(),
     ]);
-    res.json({ success: true, data: { farmers, total, page, limit, totalPages: Math.ceil(total / limit) } });
+    res.json({ success: true, data: { data, total, page, limit, totalPages: Math.ceil(total / limit) } });
   } catch (e) { next(e); }
 });
 
@@ -97,12 +97,11 @@ router.get('/buyers', async (req: Request, res: Response, next: NextFunction) =>
     const where: any = {};
     if (req.query.verificationStatus) where.verificationStatus = req.query.verificationStatus;
 
-    const [buyers, total, verifiedCount, pendingCount] = await Promise.all([
+    const [data, total, verifiedCount, pendingCount] = await Promise.all([
       prisma.buyerProfile.findMany({
         skip, take: limit, where,
         include: {
           user: { select: { email: true, status: true, createdAt: true } },
-          offers: { take: 1, orderBy: { createdAt: 'desc' } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -112,7 +111,7 @@ router.get('/buyers', async (req: Request, res: Response, next: NextFunction) =>
     ]);
     res.json({
       success: true,
-      data: { buyers, total, page, limit, totalPages: Math.ceil(total / limit), verifiedCount, pendingCount },
+      data: { data, total, page, limit, totalPages: Math.ceil(total / limit), verifiedCount, pendingCount },
     });
   } catch (e) { next(e); }
 });
@@ -164,6 +163,35 @@ router.patch('/buyers/:id/verify', async (req: Request, res: Response, next: Nex
     });
 
     res.json({ success: true, message: `Buyer ${status.toLowerCase()}` });
+  } catch (e) { next(e); }
+});
+
+// ─── Crops ────────────────────────────────────────────────────────────────────
+router.get('/crops', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const where: any = {};
+    if (req.query.cropId) where.cropId = req.query.cropId;
+    if (req.query.district) where.district = req.query.district;
+    if (req.query.quality) where.quality = req.query.quality;
+    if (req.query.isActive !== undefined) where.isActive = req.query.isActive === 'true';
+
+    const [data, total] = await Promise.all([
+      prisma.farmerCrop.findMany({
+        skip, take: limit, where,
+        include: {
+          crop: { select: { id: true, name: true, nameHi: true, nameGu: true } },
+          farmerProfile: {
+            select: { id: true, name: true, district: true, village: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.farmerCrop.count({ where }),
+    ]);
+    res.json({ success: true, data: { data, total, page, limit, totalPages: Math.ceil(total / limit) } });
   } catch (e) { next(e); }
 });
 
