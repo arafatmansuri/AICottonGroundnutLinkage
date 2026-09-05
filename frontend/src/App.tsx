@@ -24,6 +24,12 @@ import StorageAdvisorPage from './pages/farmer/StorageAdvisorPage';
 import QualityCheckPage from './pages/farmer/QualityCheckPage';
 import FarmerProfilePage from './pages/farmer/FarmerProfilePage';
 
+// Buyer pages
+import BuyerDashboard from './pages/buyer/BuyerDashboard';
+import BuyerCropSearchPage from './pages/buyer/BuyerCropSearchPage';
+import BuyerInterestsPage from './pages/buyer/BuyerInterestsPage';
+import BuyerProfilePage from './pages/buyer/BuyerProfilePage';
+
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminFarmersPage from './pages/admin/AdminFarmersPage';
@@ -51,6 +57,7 @@ function ProtectedRoute({
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     if (user.role === 'FARMER') return <Navigate to="/farmer/dashboard" replace />;
+    if (user.role === 'BUYER') return <Navigate to="/buyer/dashboard" replace />;
     return <Navigate to="/admin/dashboard" replace />;
   }
   return <>{children}</>;
@@ -81,6 +88,21 @@ function AppRoutes() {
               <Route path="ai-assistant" element={<AIAssistantPage />} />
               <Route path="profile" element={<FarmerProfilePage />} />
               <Route path="*" element={<Navigate to="/farmer/dashboard" replace />} />
+            </Routes>
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* ── Buyer routes ── */}
+      <Route path="/buyer/*" element={
+        <ProtectedRoute allowedRoles={['BUYER']}>
+          <DashboardLayout>
+            <Routes>
+              <Route path="dashboard" element={<BuyerDashboard />} />
+              <Route path="crops" element={<BuyerCropSearchPage />} />
+              <Route path="interests" element={<BuyerInterestsPage />} />
+              <Route path="profile" element={<BuyerProfilePage />} />
+              <Route path="*" element={<Navigate to="/buyer/dashboard" replace />} />
             </Routes>
           </DashboardLayout>
         </ProtectedRoute>

@@ -5,7 +5,24 @@ import { buyerOfferSchema, paginationSchema, validate } from '../validators/sche
 
 const router = Router();
 
-// Public marketplace endpoints
+// ── Public: search farmer crop listings ──────────────────────────────────────
+router.get('/crops/search', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const pagination = validate(paginationSchema, req.query);
+    const data = await buyerService.searchFarmerCrops({
+      cropName: req.query.cropName as string,
+      district: req.query.district as string,
+      quality: req.query.quality as string,
+      minPrice: req.query.minPrice ? Number(req.query.minPrice) : undefined,
+      maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : undefined,
+      page: pagination.page ?? 1,
+      limit: pagination.limit ?? 20,
+    });
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+});
+
+// ── Public marketplace endpoints ──────────────────────────────────────────────
 router.get('/marketplace', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const pagination = validate(paginationSchema, req.query);
@@ -23,17 +40,17 @@ router.get('/marketplace', async (req: Request, res: Response, next: NextFunctio
   } catch (e) { next(e); }
 });
 
-// Protected buyer endpoints
+// ── Protected buyer endpoints ──────────────────────────────────────────────────
 router.get('/profile', authenticate, authorize('BUYER'), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = await buyerService.getBuyerProfile(req.user!.id);
+    const data = await buyerService.getBuyerProfileFull(req.user!.id);
     res.json({ success: true, data });
   } catch (e) { next(e); }
 });
 
 router.put('/profile', authenticate, authorize('BUYER'), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = await buyerService.updateBuyerProfile(req.user!.id, req.body);
+    const data = await buyerService.updateBuyerProfileFull(req.user!.id, req.body);
     res.json({ success: true, data });
   } catch (e) { next(e); }
 });
@@ -69,6 +86,21 @@ router.post('/offers', authenticate, authorize('BUYER'), async (req: Request, re
 router.put('/offers/:id', authenticate, authorize('BUYER'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await buyerService.updateBuyerOffer(req.user!.id, req.params.id, req.body);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+});
+
+// ── Crop interest notifications ────────────────────────────────────────────────
+router.post('/crops/:id/interest', authenticate, authorize('BUYER'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await buyerService.sendCropInterest(req.user!.id, req.params.id, req.body.message);
+    res.status(201).json({ success: true, data, message: 'Interest notification sent to farmer' });
+  } catch (e) { next(e); }
+});
+
+router.get('/interests', authenticate, authorize('BUYER'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await buyerService.getBuyerCropInterests(req.user!.id);
     res.json({ success: true, data });
   } catch (e) { next(e); }
 });

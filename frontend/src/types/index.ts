@@ -1,5 +1,43 @@
 // Core types mirroring backend schema
 
+export interface FarmerCropListing {
+  id: string;
+  cropId: string;
+  crop: { id: string; name: string; nameHi?: string; nameGu?: string };
+  quantity: number;
+  soldQuantity: number;
+  unit: string;
+  quality: string;
+  harvestDate?: string;
+  storageStatus: string;
+  expectedPrice?: number;
+  location: string;
+  district: string;
+  notes?: string;
+  isActive: boolean;
+  createdAt: string;
+  farmerProfile: {
+    id: string;
+    name: string;
+    district: string;
+    state: string;
+    village?: string;
+    taluka?: string;
+    user: { phone?: string; email: string };
+  };
+  qualityAssessments: Array<{ estimatedGrade: string; confidence: number }>;
+}
+
+export interface CropInterestRecord {
+  id: string;
+  buyerProfileId: string;
+  farmerCropId: string;
+  message?: string;
+  isRead: boolean;
+  createdAt: string;
+  farmerCrop: FarmerCropListing;
+}
+
 export type Role = 'FARMER' | 'BUYER' | 'ADMIN';
 export type Language = 'en' | 'hi' | 'gu';
 

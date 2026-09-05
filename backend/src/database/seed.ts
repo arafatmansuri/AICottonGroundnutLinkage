@@ -36,7 +36,17 @@ async function main() {
   const wheat = await prisma.crop.upsert({
     where: { name: 'Wheat' },
     update: {},
-    create: { name: 'Wheat', nameHi: 'गेहूं', nameGu: 'ઘઉં' },
+    create: { name: 'Wheat', nameHi: 'गेहूं', nameGu: 'ઘઉં', description: 'High-yield wheat' },
+  });
+  const cumin = await prisma.crop.upsert({
+    where: { name: 'Cumin' },
+    update: {},
+    create: { name: 'Cumin', nameHi: 'जीरा', nameGu: 'જીરુ', description: 'Premium cumin seeds' },
+  });
+  const castor = await prisma.crop.upsert({
+    where: { name: 'Castor' },
+    update: {},
+    create: { name: 'Castor', nameHi: 'अरंडी', nameGu: 'એરંડા', description: 'Castor seeds' },
   });
   console.log('✅ Crops seeded');
 
@@ -82,6 +92,10 @@ async function main() {
     { mandiId: 'mandi-ahmedabad-001', cropId: groundnut.id, baseMin: 5400, baseMax: 6200, baseModal: 5800 },
     { mandiId: 'mandi-rajkot-001', cropId: groundnut.id, baseMin: 5500, baseMax: 6400, baseModal: 5950 },
     { mandiId: 'mandi-junagadh-001', cropId: groundnut.id, baseMin: 5600, baseMax: 6500, baseModal: 6050 },
+    { mandiId: 'mandi-ahmedabad-001', cropId: wheat.id, baseMin: 2200, baseMax: 2700, baseModal: 2450 },
+    { mandiId: 'mandi-rajkot-001', cropId: wheat.id, baseMin: 2250, baseMax: 2750, baseModal: 2500 },
+    { mandiId: 'mandi-surendranagar-001', cropId: cumin.id, baseMin: 22000, baseMax: 28000, baseModal: 25000 },
+    { mandiId: 'mandi-bhavnagar-001', cropId: castor.id, baseMin: 1200, baseMax: 1600, baseModal: 1400 },
   ];
 
   // Delete existing demo prices to avoid duplicates on re-seed
@@ -94,8 +108,7 @@ async function main() {
       const date = new Date(now);
       date.setDate(date.getDate() - day);
 
-      // Add some realistic variation
-      const variation = (Math.random() - 0.4) * 150; // slight upward bias
+      const variation = (Math.random() - 0.4) * 150;
       const modal = Math.round(pd.baseModal + variation + (30 - day) * 3);
       const min = Math.round(modal * 0.95);
       const max = Math.round(modal * 1.05);
@@ -121,18 +134,21 @@ async function main() {
   // ─── Farmers ────────────────────────────────────────────────────────────────
   const farmerPw = await bcrypt.hash('farmer123', 12);
   const farmers = [
-    { email: 'ramesh@farmer.com', name: 'Ramesh Patel', district: 'Ahmedabad', village: 'Sanand', taluka: 'Sanand' },
-    { email: 'suresh@farmer.com', name: 'Suresh Desai', district: 'Rajkot', village: 'Gondal', taluka: 'Gondal' },
-    { email: 'mukesh@farmer.com', name: 'Mukesh Ahir', district: 'Surendranagar', village: 'Wadhwan', taluka: 'Wadhwan' },
+    { email: 'ramesh@farmer.com', phone: '+91 98765 43210', name: 'Ramesh Patel', district: 'Ahmedabad', village: 'Sanand', taluka: 'Sanand' },
+    { email: 'suresh@farmer.com', phone: '+91 99887 76655', name: 'Suresh Desai', district: 'Rajkot', village: 'Gondal', taluka: 'Gondal' },
+    { email: 'mukesh@farmer.com', phone: '+91 94521 10983', name: 'Mukesh Ahir', district: 'Surendranagar', village: 'Wadhwan', taluka: 'Wadhwan' },
+    { email: 'bhavesh@farmer.com', phone: '+91 93741 22334', name: 'Bhavesh Sharma', district: 'Bhavnagar', village: 'Sihor', taluka: 'Sihor' },
+    { email: 'kamlesh@farmer.com', phone: '+91 90990 11223', name: 'Kamlesh Thakor', district: 'Junagadh', village: 'Keshod', taluka: 'Keshod' },
   ];
 
   const farmerProfiles = [];
   for (const f of farmers) {
     const user = await prisma.user.upsert({
       where: { email: f.email },
-      update: {},
+      update: { phone: f.phone },
       create: {
         email: f.email,
+        phone: f.phone,
         passwordHash: farmerPw,
         role: 'FARMER',
         farmerProfile: {
@@ -154,20 +170,51 @@ async function main() {
   // ─── Buyers ─────────────────────────────────────────────────────────────────
   const buyerPw = await bcrypt.hash('buyer123', 12);
   const buyerData = [
-    { email: 'shreeji@buyer.com', company: 'Shreeji Cotton Pvt Ltd', contact: 'Pranjal Mehta', district: 'Ahmedabad', verified: true },
-    { email: 'gujarat@buyer.com', company: 'Gujarat Agro Industries', contact: 'Viral Shah', district: 'Rajkot', verified: true },
-    { email: 'bharat@buyer.com', company: 'Bharat Groundnut Corp', contact: 'Kiran Patel', district: 'Junagadh', verified: true },
-    { email: 'saurashtra@buyer.com', company: 'Saurashtra Traders', contact: 'Devang Modi', district: 'Surendranagar', verified: false },
-    { email: 'national@buyer.com', company: 'National Agri Exports', contact: 'Nilesh Joshi', district: 'Bhavnagar', verified: true },
+    {
+      email: 'shreeji@buyer.com', phone: '+91 97141 55566',
+      company: 'Shreeji Cotton Pvt Ltd', contact: 'Pranjal Mehta',
+      district: 'Ahmedabad', state: 'Gujarat', verified: true, rating: 4.8,
+    },
+    {
+      email: 'gujarat@buyer.com', phone: '+91 98250 77889',
+      company: 'Gujarat Agro Industries', contact: 'Viral Shah',
+      district: 'Rajkot', state: 'Gujarat', verified: true, rating: 4.5,
+    },
+    {
+      email: 'bharat@buyer.com', phone: '+91 93151 33445',
+      company: 'Bharat Groundnut Corp', contact: 'Kiran Patel',
+      district: 'Junagadh', state: 'Gujarat', verified: true, rating: 4.2,
+    },
+    {
+      email: 'saurashtra@buyer.com', phone: '+91 90161 22334',
+      company: 'Saurashtra Traders', contact: 'Devang Modi',
+      district: 'Surendranagar', state: 'Gujarat', verified: false, rating: 0,
+    },
+    {
+      email: 'national@buyer.com', phone: '+91 98988 00112',
+      company: 'National Agri Exports', contact: 'Nilesh Joshi',
+      district: 'Bhavnagar', state: 'Gujarat', verified: true, rating: 4.6,
+    },
+    {
+      email: 'anand@buyer.com', phone: '+91 91736 44556',
+      company: 'Anand Wheat Traders', contact: 'Alpesh Chaudhary',
+      district: 'Ahmedabad', state: 'Gujarat', verified: true, rating: 4.3,
+    },
+    {
+      email: 'spice@buyer.com', phone: '+91 99099 88776',
+      company: 'Spice Route Exports', contact: 'Manish Trivedi',
+      district: 'Surendranagar', state: 'Gujarat', verified: true, rating: 4.7,
+    },
   ];
 
   const buyerProfiles = [];
   for (const b of buyerData) {
     const user = await prisma.user.upsert({
       where: { email: b.email },
-      update: {},
+      update: { phone: b.phone },
       create: {
         email: b.email,
+        phone: b.phone,
         passwordHash: buyerPw,
         role: 'BUYER',
         buyerProfile: {
@@ -175,9 +222,10 @@ async function main() {
             companyName: b.company,
             contactName: b.contact,
             district: b.district,
+            state: b.state,
             verificationStatus: b.verified ? 'VERIFIED' : 'PENDING',
             verifiedAt: b.verified ? new Date() : null,
-            rating: b.verified ? parseFloat((3.5 + Math.random() * 1.5).toFixed(1)) : 0,
+            rating: b.rating,
           },
         },
       },
@@ -191,13 +239,17 @@ async function main() {
   await prisma.buyerOffer.deleteMany({ where: { notes: { contains: '[SEED]' } } });
 
   const offerData = [
-    { buyerIdx: 0, cropId: cotton.id, price: 7450, min: 50, max: 200, quality: 'GRADE_A', district: 'Ahmedabad' },
-    { buyerIdx: 1, cropId: cotton.id, price: 7250, min: 100, max: 500, quality: 'GRADE_B', district: 'Rajkot' },
-    { buyerIdx: 2, cropId: groundnut.id, price: 6100, min: 50, max: 300, quality: 'GRADE_A', district: 'Junagadh' },
-    { buyerIdx: 3, cropId: cotton.id, price: 7100, min: 30, max: 150, quality: 'GRADE_B', district: 'Surendranagar' },
+    { buyerIdx: 0, cropId: cotton.id,    price: 7450, min: 50,  max: 200, quality: 'GRADE_A', district: 'Ahmedabad' },
+    { buyerIdx: 1, cropId: cotton.id,    price: 7250, min: 100, max: 500, quality: 'GRADE_B', district: 'Rajkot' },
+    { buyerIdx: 2, cropId: groundnut.id, price: 6100, min: 50,  max: 300, quality: 'GRADE_A', district: 'Junagadh' },
+    { buyerIdx: 3, cropId: cotton.id,    price: 7100, min: 30,  max: 150, quality: 'GRADE_B', district: 'Surendranagar' },
     { buyerIdx: 4, cropId: groundnut.id, price: 5950, min: 100, max: 400, quality: 'GRADE_B', district: 'Bhavnagar' },
-    { buyerIdx: 1, cropId: groundnut.id, price: 5900, min: 50, max: 250, quality: 'GRADE_B', district: 'Rajkot' },
-    { buyerIdx: 4, cropId: cotton.id, price: 7350, min: 80, max: 300, quality: 'GRADE_A', district: 'Bhavnagar' },
+    { buyerIdx: 1, cropId: groundnut.id, price: 5900, min: 50,  max: 250, quality: 'GRADE_B', district: 'Rajkot' },
+    { buyerIdx: 4, cropId: cotton.id,    price: 7350, min: 80,  max: 300, quality: 'GRADE_A', district: 'Bhavnagar' },
+    { buyerIdx: 5, cropId: wheat.id,     price: 2600, min: 100, max: 600, quality: 'GRADE_A', district: 'Ahmedabad' },
+    { buyerIdx: 5, cropId: wheat.id,     price: 2450, min: 50,  max: 300, quality: 'GRADE_B', district: 'Ahmedabad' },
+    { buyerIdx: 6, cropId: cumin.id,     price: 26000, min: 10, max: 80,  quality: 'GRADE_A', district: 'Surendranagar' },
+    { buyerIdx: 4, cropId: castor.id,    price: 1450, min: 50,  max: 200, quality: 'GRADE_B', district: 'Bhavnagar' },
   ];
 
   for (const o of offerData) {
@@ -223,71 +275,59 @@ async function main() {
   // ─── Farmer Crops ────────────────────────────────────────────────────────────
   await prisma.farmerCrop.deleteMany({ where: { notes: { contains: '[SEED]' } } });
 
-  await prisma.farmerCrop.create({
-    data: {
-      farmerProfileId: farmerProfiles[0].id,
-      cropId: cotton.id,
-      quantity: 150,
-      unit: 'quintal',
-      quality: 'GRADE_A',
-      harvestDate: new Date(Date.now() - 45 * 86400000),
-      storageStatus: 'NOT_STORED',
-      expectedPrice: 7500,
-      location: 'Sanand',
-      district: 'Ahmedabad',
-      notes: '[SEED] Demo crop',
-    },
-  });
+  const farmerCropData = [
+    { farmerIdx: 0, cropId: cotton.id,    qty: 150, quality: 'GRADE_A', price: 7500,  location: 'Sanand',   district: 'Ahmedabad',    daysAgo: 45 },
+    { farmerIdx: 1, cropId: groundnut.id, qty: 80,  quality: 'GRADE_B', price: 6000,  location: 'Gondal',   district: 'Rajkot',       daysAgo: 20 },
+    { farmerIdx: 2, cropId: cotton.id,    qty: 200, quality: 'GRADE_B', price: 7200,  location: 'Wadhwan',  district: 'Surendranagar', daysAgo: 10 },
+    { farmerIdx: 3, cropId: wheat.id,     qty: 120, quality: 'GRADE_A', price: 2650,  location: 'Sihor',    district: 'Bhavnagar',    daysAgo: 15 },
+    { farmerIdx: 4, cropId: groundnut.id, qty: 95,  quality: 'GRADE_A', price: 6200,  location: 'Keshod',   district: 'Junagadh',     daysAgo: 5  },
+    { farmerIdx: 0, cropId: wheat.id,     qty: 60,  quality: 'GRADE_B', price: 2400,  location: 'Sanand',   district: 'Ahmedabad',    daysAgo: 30 },
+    { farmerIdx: 2, cropId: cumin.id,     qty: 25,  quality: 'GRADE_A', price: 27000, location: 'Wadhwan',  district: 'Surendranagar', daysAgo: 8  },
+    { farmerIdx: 3, cropId: castor.id,    qty: 110, quality: 'GRADE_B', price: 1380,  location: 'Sihor',    district: 'Bhavnagar',    daysAgo: 12 },
+    { farmerIdx: 1, cropId: cotton.id,    qty: 70,  quality: 'GRADE_C', price: 6800,  location: 'Gondal',   district: 'Rajkot',       daysAgo: 22 },
+    { farmerIdx: 4, cropId: wheat.id,     qty: 90,  quality: 'GRADE_A', price: 2700,  location: 'Keshod',   district: 'Junagadh',     daysAgo: 3  },
+  ];
 
-  await prisma.farmerCrop.create({
-    data: {
-      farmerProfileId: farmerProfiles[1].id,
-      cropId: groundnut.id,
-      quantity: 80,
-      unit: 'quintal',
-      quality: 'GRADE_B',
-      harvestDate: new Date(Date.now() - 20 * 86400000),
-      storageStatus: 'NOT_STORED',
-      expectedPrice: 6000,
-      location: 'Gondal',
-      district: 'Rajkot',
-      notes: '[SEED] Demo crop',
-    },
-  });
-
-  await prisma.farmerCrop.create({
-    data: {
-      farmerProfileId: farmerProfiles[2].id,
-      cropId: cotton.id,
-      quantity: 200,
-      unit: 'quintal',
-      quality: 'GRADE_B',
-      harvestDate: new Date(Date.now() - 10 * 86400000),
-      storageStatus: 'NOT_STORED',
-      expectedPrice: 7200,
-      location: 'Wadhwan',
-      district: 'Surendranagar',
-      notes: '[SEED] Demo crop',
-    },
-  });
-  console.log('✅ Farmer crops seeded');
+  for (const fc of farmerCropData) {
+    await prisma.farmerCrop.create({
+      data: {
+        farmerProfileId: farmerProfiles[fc.farmerIdx].id,
+        cropId: fc.cropId,
+        quantity: fc.qty,
+        unit: 'quintal',
+        quality: fc.quality as any,
+        harvestDate: new Date(Date.now() - fc.daysAgo * 86400000),
+        storageStatus: 'NOT_STORED',
+        expectedPrice: fc.price,
+        location: fc.location,
+        district: fc.district,
+        notes: '[SEED] Demo crop',
+      },
+    });
+  }
+  console.log('✅ Farmer crops seeded:', farmerCropData.length);
 
   // ─── Storage Options ─────────────────────────────────────────────────────────
   await prisma.storageOption.deleteMany({ where: { name: { contains: 'Demo' } } });
   await Promise.all([
-    prisma.storageOption.create({ data: { name: 'Demo Ahmedabad Warehouse', location: 'Ahmedabad', district: 'Ahmedabad', costPerUnit: 60, capacity: 5000 } }),
-    prisma.storageOption.create({ data: { name: 'Demo Rajkot Cold Storage', location: 'Rajkot', district: 'Rajkot', costPerUnit: 75, capacity: 3000 } }),
-    prisma.storageOption.create({ data: { name: 'Demo Surendranagar Store', location: 'Surendranagar', district: 'Surendranagar', costPerUnit: 50, capacity: 2000 } }),
+    prisma.storageOption.create({ data: { name: 'Demo Ahmedabad Warehouse',   location: 'Ahmedabad',    district: 'Ahmedabad',    costPerUnit: 60, capacity: 5000 } }),
+    prisma.storageOption.create({ data: { name: 'Demo Rajkot Cold Storage',   location: 'Rajkot',       district: 'Rajkot',       costPerUnit: 75, capacity: 3000 } }),
+    prisma.storageOption.create({ data: { name: 'Demo Surendranagar Store',   location: 'Surendranagar',district: 'Surendranagar', costPerUnit: 50, capacity: 2000 } }),
+    prisma.storageOption.create({ data: { name: 'Demo Bhavnagar Agri Store',  location: 'Bhavnagar',    district: 'Bhavnagar',    costPerUnit: 55, capacity: 2500 } }),
+    prisma.storageOption.create({ data: { name: 'Demo Junagadh Cold Chain',   location: 'Junagadh',     district: 'Junagadh',     costPerUnit: 65, capacity: 1800 } }),
   ]);
   console.log('✅ Storage options seeded');
 
   console.log('\n🎉 Seeding complete!');
   console.log('\n📋 Demo Credentials:');
-  console.log('  Admin:  admin@kisanmitra.ai / admin123');
-  console.log('  Farmer: ramesh@farmer.com / farmer123');
-  console.log('  Farmer: suresh@farmer.com / farmer123');
-  console.log('  Buyer:  shreeji@buyer.com / buyer123');
-  console.log('  Buyer:  gujarat@buyer.com / buyer123');
+  console.log('  Admin:   admin@kisanmitra.ai   / admin123');
+  console.log('  Farmer:  ramesh@farmer.com     / farmer123');
+  console.log('  Farmer:  suresh@farmer.com     / farmer123');
+  console.log('  Farmer:  bhavesh@farmer.com    / farmer123');
+  console.log('  Buyer:   shreeji@buyer.com     / buyer123');
+  console.log('  Buyer:   gujarat@buyer.com     / buyer123');
+  console.log('  Buyer:   anand@buyer.com       / buyer123');
+  console.log('  Buyer:   spice@buyer.com       / buyer123');
 }
 
 main()

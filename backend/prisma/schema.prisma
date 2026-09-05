@@ -62,6 +62,7 @@ enum NotificationType {
   PAYMENT_RECEIVED
   AI_RECOMMENDATION
   SYSTEM
+  CROP_INTEREST
 }
 
 enum RecommendationDecision {
@@ -151,10 +152,11 @@ model BuyerProfile {
   createdAt           DateTime                @default(now())
   updatedAt           DateTime                @updatedAt
 
-  requirements  BuyerRequirement[]
-  offers        BuyerOffer[]
-  transactions  Transaction[]
-  verification  BuyerVerification?
+  requirements          BuyerRequirement[]
+  offers                BuyerOffer[]
+  transactions          Transaction[]
+  verification          BuyerVerification?
+  cropInterests         CropInterestNotification[]
 
   @@map("buyer_profiles")
 }
@@ -210,9 +212,10 @@ model FarmerCrop {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  qualityAssessments QualityAssessment[]
-  aiRecommendations  AIRecommendation[]
-  transactions       Transaction[]
+  qualityAssessments    QualityAssessment[]
+  aiRecommendations     AIRecommendation[]
+  transactions          Transaction[]
+  cropInterests         CropInterestNotification[]
 
   @@index([farmerProfileId])
   @@index([cropId])
@@ -451,6 +454,23 @@ model Conversation {
   updatedAt DateTime  @updatedAt
 
   @@map("conversations")
+}
+
+// ─── Crop Interest Notification ───────────────────────────────────────────────
+
+model CropInterestNotification {
+  id              String        @id @default(uuid())
+  buyerProfileId  String
+  buyerProfile    BuyerProfile  @relation(fields: [buyerProfileId], references: [id])
+  farmerCropId    String
+  farmerCrop      FarmerCrop    @relation(fields: [farmerCropId], references: [id])
+  message         String?
+  isRead          Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+
+  @@index([buyerProfileId])
+  @@index([farmerCropId])
+  @@map("crop_interest_notifications")
 }
 
 // ─── Audit Log ────────────────────────────────────────────────────────────────

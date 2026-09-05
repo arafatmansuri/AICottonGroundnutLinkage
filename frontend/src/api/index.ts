@@ -18,6 +18,8 @@ import type {
   IncomeSummary,
   AdminStats,
   QualityAssessment,
+  FarmerCropListing,
+  CropInterestRecord,
 } from '../types';
 import type { AxiosResponse } from 'axios';
 
@@ -183,9 +185,29 @@ export const farmerApi = {
 
 // ── Buyer ─────────────────────────────────────────────────────────────────────
 
+export interface BuyerProfileUpdateInput {
+  companyName?: string;
+  contactName?: string;
+  district?: string;
+  state?: string;
+  phone?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface CropSearchParams {
+  cropName?: string;
+  district?: string;
+  quality?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  page?: number;
+  limit?: number;
+}
+
 export const buyerApi = {
   getProfile: (): AR<BuyerProfile> => api.get('/buyers/profile'),
-  updateProfile: (data: Partial<BuyerProfile>): AR<BuyerProfile> =>
+  updateProfile: (data: BuyerProfileUpdateInput): AR<BuyerProfile> =>
     api.put('/buyers/profile', data),
   getOffers: (): AR<BuyerOffer[]> => api.get('/buyers/offers'),
   createOffer: (data: BuyerOfferInput): AR<BuyerOffer> => api.post('/buyers/offers', data),
@@ -193,6 +215,12 @@ export const buyerApi = {
     api.put(`/buyers/offers/${id}`, data),
   getMarketplace: (params: MarketPricesParams & PaginationParams): AR<PaginatedResponse<BuyerOffer>> =>
     api.get('/buyers/marketplace', { params }),
+  // Buyer-specific crop search + interest
+  searchCrops: (params: CropSearchParams): AR<PaginatedResponse<FarmerCropListing>> =>
+    api.get('/buyers/crops/search', { params }),
+  sendInterest: (farmerCropId: string, message?: string): AR<CropInterestRecord> =>
+    api.post(`/buyers/crops/${farmerCropId}/interest`, { message }),
+  getInterests: (): AR<CropInterestRecord[]> => api.get('/buyers/interests'),
 };
 
 // ── Transactions ──────────────────────────────────────────────────────────────

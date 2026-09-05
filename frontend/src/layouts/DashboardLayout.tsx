@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   LayoutDashboard, TrendingUp, Wheat, Users, Briefcase,
   Star, Wallet, Bot, LogOut, Menu, X,
-  Globe, ChevronDown, Leaf, UserCircle,
+  Globe, ChevronDown, Leaf, UserCircle, Bell,
 } from 'lucide-react';
 import type { RootState } from '../store';
 import { logout } from '../store/authSlice';
@@ -54,6 +54,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { to: '/farmer/profile', icon: UserCircle, key: 'my_profile' },
   ];
 
+  const buyerNav = [
+    { to: '/buyer/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/buyer/crops', icon: Wheat, label: 'Browse Crops' },
+    { to: '/buyer/interests', icon: Bell, label: 'My Interests' },
+    { to: '/buyer/profile', icon: UserCircle, label: 'My Profile' },
+  ];
+
   const adminNav = [
     { to: '/admin/dashboard', icon: LayoutDashboard, key: 'overview' },
     { to: '/admin/farmers', icon: Users, key: 'farmers' },
@@ -61,7 +68,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { to: '/admin/market-data', icon: TrendingUp, key: 'market_data' },
   ];
 
-  const navItems = user?.role === 'FARMER' ? farmerNav : adminNav;
+  const navItems = user?.role === 'FARMER'
+    ? farmerNav
+    : user?.role === 'BUYER'
+    ? buyerNav
+    : adminNav;
 
   const handleLogout = async () => {
     try { await authApi.logout(); } catch {}
@@ -105,7 +116,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             }
           >
             <item.icon className="w-5 h-5 flex-shrink-0" />
-            {expanded && <span>{t(item.key)}</span>}
+            {expanded && <span>{(item as any).label ?? t((item as any).key)}</span>}
           </NavLink>
         ))}
       </nav>
@@ -197,9 +208,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
           <div className="flex-1" />
-          {user?.role === 'FARMER' ? (
+          {(user?.role === 'FARMER' || user?.role === 'BUYER') ? (
             <Link
-              to="/farmer/profile"
+              to={user.role === 'FARMER' ? '/farmer/profile' : '/buyer/profile'}
               title="My Profile"
               className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-gray-50 transition-colors group"
             >
