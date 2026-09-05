@@ -33,21 +33,6 @@ async function main() {
     update: {},
     create: { name: 'Groundnut', nameHi: 'मूंगफली', nameGu: 'મગફળી', description: 'Bold groundnut' },
   });
-  const wheat = await prisma.crop.upsert({
-    where: { name: 'Wheat' },
-    update: {},
-    create: { name: 'Wheat', nameHi: 'गेहूं', nameGu: 'ઘઉં', description: 'High-yield wheat' },
-  });
-  const cumin = await prisma.crop.upsert({
-    where: { name: 'Cumin' },
-    update: {},
-    create: { name: 'Cumin', nameHi: 'जीरा', nameGu: 'જીરુ', description: 'Premium cumin seeds' },
-  });
-  const castor = await prisma.crop.upsert({
-    where: { name: 'Castor' },
-    update: {},
-    create: { name: 'Castor', nameHi: 'अरंडी', nameGu: 'એરંડા', description: 'Castor seeds' },
-  });
   console.log('✅ Crops seeded');
 
   // ─── Mandis ─────────────────────────────────────────────────────────────────
@@ -92,10 +77,6 @@ async function main() {
     { mandiId: 'mandi-ahmedabad-001', cropId: groundnut.id, baseMin: 5400, baseMax: 6200, baseModal: 5800 },
     { mandiId: 'mandi-rajkot-001', cropId: groundnut.id, baseMin: 5500, baseMax: 6400, baseModal: 5950 },
     { mandiId: 'mandi-junagadh-001', cropId: groundnut.id, baseMin: 5600, baseMax: 6500, baseModal: 6050 },
-    { mandiId: 'mandi-ahmedabad-001', cropId: wheat.id, baseMin: 2200, baseMax: 2700, baseModal: 2450 },
-    { mandiId: 'mandi-rajkot-001', cropId: wheat.id, baseMin: 2250, baseMax: 2750, baseModal: 2500 },
-    { mandiId: 'mandi-surendranagar-001', cropId: cumin.id, baseMin: 22000, baseMax: 28000, baseModal: 25000 },
-    { mandiId: 'mandi-bhavnagar-001', cropId: castor.id, baseMin: 1200, baseMax: 1600, baseModal: 1400 },
   ];
 
   // Delete existing demo prices to avoid duplicates on re-seed
@@ -195,16 +176,6 @@ async function main() {
       company: 'National Agri Exports', contact: 'Nilesh Joshi',
       district: 'Bhavnagar', state: 'Gujarat', verified: true, rating: 4.6,
     },
-    {
-      email: 'anand@buyer.com', phone: '+91 91736 44556',
-      company: 'Anand Wheat Traders', contact: 'Alpesh Chaudhary',
-      district: 'Ahmedabad', state: 'Gujarat', verified: true, rating: 4.3,
-    },
-    {
-      email: 'spice@buyer.com', phone: '+91 99099 88776',
-      company: 'Spice Route Exports', contact: 'Manish Trivedi',
-      district: 'Surendranagar', state: 'Gujarat', verified: true, rating: 4.7,
-    },
   ];
 
   const buyerProfiles = [];
@@ -246,10 +217,6 @@ async function main() {
     { buyerIdx: 4, cropId: groundnut.id, price: 5950, min: 100, max: 400, quality: 'GRADE_B', district: 'Bhavnagar' },
     { buyerIdx: 1, cropId: groundnut.id, price: 5900, min: 50,  max: 250, quality: 'GRADE_B', district: 'Rajkot' },
     { buyerIdx: 4, cropId: cotton.id,    price: 7350, min: 80,  max: 300, quality: 'GRADE_A', district: 'Bhavnagar' },
-    { buyerIdx: 5, cropId: wheat.id,     price: 2600, min: 100, max: 600, quality: 'GRADE_A', district: 'Ahmedabad' },
-    { buyerIdx: 5, cropId: wheat.id,     price: 2450, min: 50,  max: 300, quality: 'GRADE_B', district: 'Ahmedabad' },
-    { buyerIdx: 6, cropId: cumin.id,     price: 26000, min: 10, max: 80,  quality: 'GRADE_A', district: 'Surendranagar' },
-    { buyerIdx: 4, cropId: castor.id,    price: 1450, min: 50,  max: 200, quality: 'GRADE_B', district: 'Bhavnagar' },
   ];
 
   for (const o of offerData) {
@@ -279,13 +246,8 @@ async function main() {
     { farmerIdx: 0, cropId: cotton.id,    qty: 150, quality: 'GRADE_A', price: 7500,  location: 'Sanand',   district: 'Ahmedabad',    daysAgo: 45 },
     { farmerIdx: 1, cropId: groundnut.id, qty: 80,  quality: 'GRADE_B', price: 6000,  location: 'Gondal',   district: 'Rajkot',       daysAgo: 20 },
     { farmerIdx: 2, cropId: cotton.id,    qty: 200, quality: 'GRADE_B', price: 7200,  location: 'Wadhwan',  district: 'Surendranagar', daysAgo: 10 },
-    { farmerIdx: 3, cropId: wheat.id,     qty: 120, quality: 'GRADE_A', price: 2650,  location: 'Sihor',    district: 'Bhavnagar',    daysAgo: 15 },
-    { farmerIdx: 4, cropId: groundnut.id, qty: 95,  quality: 'GRADE_A', price: 6200,  location: 'Keshod',   district: 'Junagadh',     daysAgo: 5  },
-    { farmerIdx: 0, cropId: wheat.id,     qty: 60,  quality: 'GRADE_B', price: 2400,  location: 'Sanand',   district: 'Ahmedabad',    daysAgo: 30 },
-    { farmerIdx: 2, cropId: cumin.id,     qty: 25,  quality: 'GRADE_A', price: 27000, location: 'Wadhwan',  district: 'Surendranagar', daysAgo: 8  },
-    { farmerIdx: 3, cropId: castor.id,    qty: 110, quality: 'GRADE_B', price: 1380,  location: 'Sihor',    district: 'Bhavnagar',    daysAgo: 12 },
-    { farmerIdx: 1, cropId: cotton.id,    qty: 70,  quality: 'GRADE_C', price: 6800,  location: 'Gondal',   district: 'Rajkot',       daysAgo: 22 },
-    { farmerIdx: 4, cropId: wheat.id,     qty: 90,  quality: 'GRADE_A', price: 2700,  location: 'Keshod',   district: 'Junagadh',     daysAgo: 3  },
+    { farmerIdx: 3, cropId: groundnut.id, qty: 95,  quality: 'GRADE_A', price: 6200,  location: 'Keshod',   district: 'Junagadh',     daysAgo: 5  },
+    { farmerIdx: 4, cropId: cotton.id,    qty: 70,  quality: 'GRADE_C', price: 6800,  location: 'Gondal',   district: 'Rajkot',       daysAgo: 22 },
   ];
 
   for (const fc of farmerCropData) {
@@ -326,8 +288,6 @@ async function main() {
   console.log('  Farmer:  bhavesh@farmer.com    / farmer123');
   console.log('  Buyer:   shreeji@buyer.com     / buyer123');
   console.log('  Buyer:   gujarat@buyer.com     / buyer123');
-  console.log('  Buyer:   anand@buyer.com       / buyer123');
-  console.log('  Buyer:   spice@buyer.com       / buyer123');
 }
 
 main()

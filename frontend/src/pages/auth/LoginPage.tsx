@@ -9,12 +9,11 @@ import toast from 'react-hot-toast';
 import Navbar from '../../components/common/Navbar';
 
 const DEMO_ACCOUNTS = [
-  { label: '🌾 Farmer', sublabel: 'Ramesh Patel', email: 'ramesh@farmer.com',  pass: 'farmer123' },
-  { label: '🌾 Farmer', sublabel: 'Bhavesh Sharma', email: 'bhavesh@farmer.com', pass: 'farmer123' },
-  { label: '🛒 Buyer',  sublabel: 'Shreeji Cotton', email: 'shreeji@buyer.com',  pass: 'buyer123'  },
-  { label: '🛒 Buyer',  sublabel: 'Anand Wheat',   email: 'anand@buyer.com',    pass: 'buyer123'  },
-  { label: '🛒 Buyer',  sublabel: 'Spice Route',   email: 'spice@buyer.com',    pass: 'buyer123'  },
-  { label: '⚙ Admin',  sublabel: 'Platform Admin', email: 'admin@kisanmitra.ai', pass: 'admin123' },
+  { label: '🌾 Farmer', sublabel: 'Ramesh Patel',   email: 'ramesh@farmer.com',   pass: 'farmer123' },
+  { label: '🌾 Farmer', sublabel: 'Bhavesh Sharma', email: 'bhavesh@farmer.com',  pass: 'farmer123' },
+  { label: '🛒 Buyer',  sublabel: 'Shreeji Cotton', email: 'shreeji@buyer.com',   pass: 'buyer123'  },
+  { label: '🛒 Buyer',  sublabel: 'Bharat Groundnut', email: 'bharat@buyer.com',  pass: 'buyer123'  },
+  { label: '⚙ Admin',  sublabel: 'Platform Admin', email: 'admin@kisanmitra.ai',  pass: 'admin123' },
 ];
 
 export default function LoginPage() {

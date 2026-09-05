@@ -427,25 +427,11 @@ Where appropriate also use:
 
 # 13. CROP MANAGEMENT
 
-Initially focus on:
+Supported crops:
 
 ## Cotton
 
 ## Groundnut
-
-The architecture must allow additional crops later.
-
-Possible future crops:
-
-* Wheat
-* Rice
-* Onion
-* Potato
-* Castor
-* Cumin
-* Sesame
-
-Do not hardcode the application in a way that prevents future crop expansion.
 
 ---
 

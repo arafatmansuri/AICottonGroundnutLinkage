@@ -127,15 +127,7 @@ Grading criteria:
     let priceMax = 0;
     const observations = [...baseObservations];
 
-    if (cropLower.includes('cotton')) {
-      observations.push('No image provided — heuristic estimate only');
-      observations.push('No visible contamination assumed');
-      observations.push('Grade assigned based on crop type alone');
-      grade = 'GRADE_B';
-      confidence = 0.5;
-      priceMin = 6800;
-      priceMax = 7400;
-    } else if (cropLower.includes('groundnut')) {
+    if (cropLower.includes('groundnut')) {
       observations.push('No image provided — heuristic estimate only');
       observations.push('Moisture levels cannot be assessed without image');
       grade = 'GRADE_B';
@@ -143,11 +135,14 @@ Grading criteria:
       priceMin = 5500;
       priceMax = 6200;
     } else {
-      observations.push('No image provided — generic estimate');
-      grade = 'UNGRADED';
-      confidence = 0.4;
-      priceMin = 4000;
-      priceMax = 6000;
+      // Default: Cotton
+      observations.push('No image provided — heuristic estimate only');
+      observations.push('No visible contamination assumed');
+      observations.push('Grade assigned based on crop type alone');
+      grade = 'GRADE_B';
+      confidence = 0.5;
+      priceMin = 6800;
+      priceMax = 7400;
     }
 
     return {

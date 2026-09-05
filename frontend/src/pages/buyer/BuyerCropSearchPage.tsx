@@ -109,7 +109,7 @@ export default function BuyerCropSearchPage() {
             <input
               type="text"
               className={inputCls}
-              placeholder="e.g. Wheat, Cotton…"
+              placeholder="e.g. Cotton, Groundnut…"
               value={cropName}
               onChange={e => setCropName(e.target.value)}
             />
@@ -350,7 +350,7 @@ export default function BuyerCropSearchPage() {
               <textarea
                 rows={3}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                placeholder="e.g. I'm interested in purchasing your wheat crop. Can we discuss pricing?"
+                placeholder="e.g. I'm interested in purchasing your cotton crop. Can we discuss pricing?"
                 value={interestMsg}
                 onChange={e => setInterestMsg(e.target.value)}
                 maxLength={500}

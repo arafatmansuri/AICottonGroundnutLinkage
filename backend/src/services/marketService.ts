@@ -1,8 +1,13 @@
 import prisma from '../database/client';
 import { NotFoundError } from '../middleware/errorHandler';
 
+const SUPPORTED_CROPS = ['Cotton', 'Groundnut'];
+
 export async function getAllCrops() {
-  return prisma.crop.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } });
+  return prisma.crop.findMany({
+    where: { isActive: true, name: { in: SUPPORTED_CROPS } },
+    orderBy: { name: 'asc' },
+  });
 }
 
 export async function getCropById(id: string) {
