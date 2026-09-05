@@ -8,6 +8,16 @@ KisanMitra AI is a full-stack, production-quality web platform that transforms m
 
 ---
 
+## 🌐 Live Demo
+
+| | URL |
+|---|---|
+| **Frontend** | https://kisanmitra-gls.vercel.app |
+
+> Try it instantly with the [demo credentials](#-demo-credentials) below — no sign-up needed.
+
+---
+
 ## 🏗 Architecture Overview
 
 ```
@@ -151,6 +161,62 @@ project-root/
 
 ---
 
+## 🚀 Installation & Running
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL 14+
+- npm
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/arafatmansuri/AICottonGroundnutLinkage.git
+cd AICottonGroundnutLinkage
+
+# Backend
+cd backend
+npm install
+
+# Frontend
+cd ../frontend
+npm install
+```
+
+### 2. Set up database
+
+```bash
+cd backend
+
+# Copy and configure .env
+cp .env.example .env
+# Edit .env with your DATABASE_URL
+
+# Run migrations
+npx prisma migrate dev --name init
+
+# Seed demo data
+npm run db:seed
+```
+
+### 3. Run backend
+
+```bash
+cd backend
+npm run dev
+# Server starts at http://localhost:5000
+```
+
+### 4. Run frontend
+
+```bash
+cd frontend
+npm run dev
+# App starts at http://localhost:5173
+```
+
+---
+
 ## ⚙️ Environment Variables
 
 Copy `backend/.env.example` to `backend/.env` and fill in values:
@@ -202,59 +268,6 @@ LOG_LEVEL=info
 > **IBM Granite note:** `IBM_GRANITE_API_KEY` is an IBM Cloud API key, not a direct Bearer token.
 > The backend exchanges it for an IAM access token automatically via `POST https://iam.cloud.ibm.com/identity/token`.
 > Use `ibm/granite-4-h-small` (us-south / eu-de only) or `ibm/granite-3-8b-instruct` (all regions).
-
----
-
-## 🚀 Installation & Running
-
-### Prerequisites
-- Node.js 18+
-- PostgreSQL 14+
-- npm
-
-### 1. Clone and install
-
-```bash
-# Backend
-cd backend
-npm install
-
-# Frontend
-cd ../frontend
-npm install
-```
-
-### 2. Set up database
-
-```bash
-cd backend
-
-# Copy and configure .env
-cp .env.example .env
-# Edit .env with your DATABASE_URL
-
-# Run migrations
-npx prisma migrate dev --name init
-
-# Seed demo data
-npm run db:seed
-```
-
-### 3. Run backend
-
-```bash
-cd backend
-npm run dev
-# Server starts at http://localhost:5000
-```
-
-### 4. Run frontend
-
-```bash
-cd frontend
-npm run dev
-# App starts at http://localhost:5173
-```
 
 ---
 
