@@ -1,67 +1,28 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Leaf, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Leaf, ArrowLeft, Mail } from 'lucide-react';
 import { authApi } from '../../api';
 import toast from 'react-hot-toast';
 
-type Step = 'request' | 'reset';
-
 export default function ForgotPasswordPage() {
-  const navigate = useNavigate();
-  const [step, setStep] = useState<Step>('request');
-
-  // Step 1 — request reset
   const [email, setEmail] = useState('');
-  const [requestLoading, setRequestLoading] = useState(false);
-  const [resetToken, setResetToken] = useState('');
-
-  // Step 2 — reset password
-  const [token, setToken] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [resetLoading, setResetLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const inputCls = 'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent';
   const labelCls = 'block text-xs font-medium text-gray-600 mb-1';
 
-  const handleRequestReset = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRequestLoading(true);
+    setLoading(true);
     try {
-      const { data } = await authApi.forgotPassword(email);
-      // In dev mode the token is returned in the response; in production it would be emailed
-      if (data.data?.resetToken) {
-        setResetToken(data.data.resetToken);
-        setToken(data.data.resetToken);
-      }
-      setStep('reset');
-      toast.success('Reset instructions sent! Check your email.');
+      await authApi.forgotPassword(email);
+      setSent(true);
+      toast.success('Reset link sent! Check your inbox.');
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message || 'Request failed');
     } finally {
-      setRequestLoading(false);
-    }
-  };
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-    setResetLoading(true);
-    try {
-      await authApi.resetPassword({ token, newPassword });
-      toast.success('Password reset successfully! Please sign in.');
-      navigate('/login');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || 'Reset failed. Token may have expired.');
-    } finally {
-      setResetLoading(false);
+      setLoading(false);
     }
   };
 
@@ -78,21 +39,41 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          {/* Back link */}
           <Link to="/login" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-6">
             <ArrowLeft className="w-4 h-4" />
             Back to Sign In
           </Link>
 
-          {/* ── Step 1: Request reset ── */}
-          {step === 'request' && (
+          {sent ? (
+            /* ── Success state ── */
+            <div className="text-center py-4">
+              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-7 h-7 text-green-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">Check your email</h2>
+              <p className="text-sm text-gray-500 mb-6">
+                We've sent a password reset link to <span className="font-medium text-gray-700">{email}</span>.
+                The link expires in 15 minutes.
+              </p>
+              <p className="text-xs text-gray-400">
+                Didn't receive it?{' '}
+                <button
+                  onClick={() => setSent(false)}
+                  className="text-green-600 hover:underline font-medium"
+                >
+                  Try again
+                </button>
+              </p>
+            </div>
+          ) : (
+            /* ── Request form ── */
             <>
               <h2 className="text-xl font-semibold text-gray-800 mb-2">Forgot Password?</h2>
               <p className="text-sm text-gray-500 mb-6">
                 Enter the email address linked to your account and we'll send you a reset link.
               </p>
 
-              <form onSubmit={handleRequestReset} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className={labelCls}>Email Address</label>
                   <input
@@ -106,89 +87,12 @@ export default function ForgotPasswordPage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={requestLoading}
+                  disabled={loading}
                   className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl text-sm font-medium transition-colors"
                 >
-                  {requestLoading ? 'Sending...' : 'Send Reset Link'}
+                  {loading ? 'Sending...' : 'Send Reset Link'}
                 </button>
               </form>
-            </>
-          )}
-
-          {/* ── Step 2: Enter reset token + new password ── */}
-          {step === 'reset' && (
-            <>
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">Reset Password</h2>
-              <p className="text-sm text-gray-500 mb-6">
-                Enter the reset token from your email and choose a new password.
-              </p>
-
-              {resetToken && (
-                <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-xl px-4 py-3 mb-5 text-xs">
-                  <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>
-                    <span className="font-medium">Dev mode:</span> Your reset token is{' '}
-                    <span className="font-mono break-all">{resetToken}</span>
-                    <br />In production, this would be emailed to you.
-                  </span>
-                </div>
-              )}
-
-              <form onSubmit={handleResetPassword} className="space-y-4">
-                <div>
-                  <label className={labelCls}>Reset Token</label>
-                  <input
-                    type="text"
-                    className={`${inputCls} font-mono text-xs`}
-                    placeholder="Paste your reset token"
-                    value={token}
-                    onChange={e => setToken(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>New Password</label>
-                  <input
-                    type="password"
-                    className={inputCls}
-                    placeholder="Min. 6 characters"
-                    value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div>
-                  <label className={labelCls}>Confirm New Password</label>
-                  <input
-                    type="password"
-                    className={inputCls}
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                  {confirmPassword.length > 0 && newPassword !== confirmPassword && (
-                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> Passwords do not match
-                    </p>
-                  )}
-                </div>
-                <button
-                  type="submit"
-                  disabled={resetLoading}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl text-sm font-medium transition-colors"
-                >
-                  {resetLoading ? 'Resetting...' : 'Reset Password'}
-                </button>
-              </form>
-
-              <button
-                onClick={() => setStep('request')}
-                className="w-full mt-3 text-sm text-gray-500 hover:text-gray-700 py-2"
-              >
-                Didn't receive a token? Try again
-              </button>
             </>
           )}
         </div>

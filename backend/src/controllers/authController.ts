@@ -64,12 +64,11 @@ export async function changePassword(req: Request, res: Response, next: NextFunc
 export async function forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { email } = validate(forgotPasswordSchema, req.body);
-    const result = await authService.forgotPassword(email);
+    await authService.forgotPassword(email);
     // Always return 200 to avoid email enumeration
     res.json({
       success: true,
-      message: 'If that email exists, a reset token has been sent.',
-      ...(result.resetToken ? { data: { resetToken: result.resetToken } } : {}),
+      message: 'If that email exists, a password reset link has been sent to your email.',
     });
   } catch (err) {
     next(err);

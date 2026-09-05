@@ -38,6 +38,11 @@ interface Config {
     apiSecret: string;
     uploadFolder: string;
   };
+  mailer: {
+    user: string;
+    pass: string;
+  };
+  frontendUrl: string;
 }
 
 function requireEnv(key: string): string {
@@ -85,6 +90,11 @@ const config: Config = {
     apiSecret: process.env.CLOUDINARY_API_SECRET || '',
     uploadFolder: process.env.CLOUDINARY_UPLOAD_FOLDER || 'ailinkage/quality-checks',
   },
+  mailer: {
+    user: process.env.MAILER_USER || '',
+    pass: process.env.MAILER_PASS || '',
+  },
+  frontendUrl: process.env.CORS_ORIGIN || 'http://localhost:5173',
 };
 
 export default config;

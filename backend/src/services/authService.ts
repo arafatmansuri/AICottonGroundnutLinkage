@@ -5,6 +5,7 @@ import prisma from '../database/client';
 import config from '../config';
 import { ConflictError, AuthenticationError, NotFoundError, ValidationError } from '../middleware/errorHandler';
 import { AuthUser } from '../middleware/auth';
+import { sendPasswordResetEmail } from './mailerService';
 
 export interface RegisterInput {
   email: string;
@@ -165,16 +166,15 @@ export async function changePassword(
 // In-memory store for password reset tokens (production should use DB/Redis)
 const resetTokens = new Map<string, { userId: string; expiresAt: number }>();
 
-export async function forgotPassword(email: string): Promise<{ resetToken: string }> {
+export async function forgotPassword(email: string): Promise<void> {
   const user = await prisma.user.findUnique({ where: { email } });
   // Always respond the same way to avoid email enumeration
-  if (!user) return { resetToken: '' };
+  if (!user) return;
 
   const token = crypto.randomBytes(32).toString('hex');
   resetTokens.set(token, { userId: user.id, expiresAt: Date.now() + 15 * 60 * 1000 }); // 15 min
 
-  // In production, send email here. For now return token directly.
-  return { resetToken: token };
+  await sendPasswordResetEmail(email, token);
 }
 
 export async function resetPassword(token: string, newPassword: string): Promise<void> {

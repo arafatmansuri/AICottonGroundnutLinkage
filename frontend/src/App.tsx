@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
 import { Provider, useSelector } from 'react-redux';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -10,6 +11,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 
 // Farmer pages
 import FarmerDashboard from './pages/farmer/FarmerDashboard';
@@ -56,19 +58,21 @@ function ProtectedRoute({
 
 function RootRedirect() {
   const { isAuthenticated, user } = useSelector((s: RootState) => s.auth);
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/" replace />;
   if (user?.role === 'FARMER') return <Navigate to="/farmer/dashboard" replace />;
   if (user?.role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/" />;
 }
 
 function AppRoutes() {
   return (
     <Routes>
       {/* Public */}
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/" element={<RootRedirect />} />
 
       {/* ── Farmer routes ── */}
