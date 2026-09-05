@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { buyerApi, marketApi } from '../../api';
 import { CardSkeleton } from '../../components/common/LoadingSpinner';
 import { EmptyState, ErrorState } from '../../components/common/StateComponents';
-import { formatCurrency, getRelativeTime } from '../../utils';
+import { formatCurrency } from '../../utils';
 import {
   MapPin, Package, Wheat, Filter, Star, ShieldCheck, Phone,
   Mail, X, ChevronRight, Building2, BadgeCheck, Clock, Hash,
@@ -133,7 +133,7 @@ export default function BuyerMarketplacePage() {
                           {bp?.companyName}
                         </h3>
                         {isVerified && (
-                          <BadgeCheck className="w-4 h-4 text-green-500 flex-shrink-0" title="Verified Buyer" />
+                          <BadgeCheck className="w-4 h-4 text-green-500 flex-shrink-0" />
                         )}
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">{bp?.contactName}</p>

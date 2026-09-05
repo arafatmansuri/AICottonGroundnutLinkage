@@ -6,7 +6,6 @@ import {
   RefreshCw, DollarSign, Bot, Settings, Wheat, Phone, Mail,
   BadgeCheck, Building2,
 } from 'lucide-react';
-import { EmptyState } from '../../components/common/StateComponents';
 import { useLanguage } from '../../hooks/useLanguage';
 import toast from 'react-hot-toast';
 
@@ -78,7 +77,7 @@ function CropInterestCard({ n, onMarkRead }: { n: any; onMarkRead: (id: string) 
                   )}
                 </div>
                 {data.verificationStatus === 'VERIFIED' && (
-                  <BadgeCheck className="w-4 h-4 text-green-500 ml-auto flex-shrink-0" title="Verified buyer" />
+                  <BadgeCheck className="w-4 h-4 text-green-500 ml-auto flex-shrink-0" />
                 )}
               </div>
               {data.email && (

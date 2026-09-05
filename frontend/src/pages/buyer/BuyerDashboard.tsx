@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Wheat, Bell, UserCircle, Search, ArrowRight, CheckCircle, Clock } from 'lucide-react';
+import { Wheat, Bell, UserCircle, Search, ArrowRight } from 'lucide-react';
 import { buyerApi } from '../../api';
 import type { RootState } from '../../store';
 import { formatCurrency } from '../../utils';

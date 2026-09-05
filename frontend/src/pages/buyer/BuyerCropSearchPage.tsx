@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Search, Wheat, MapPin, Phone, Mail, Star,
-  Send, ChevronLeft, ChevronRight, X, Filter, User,
+  Send, ChevronLeft, ChevronRight, X, User,
 } from 'lucide-react';
 import { buyerApi } from '../../api';
 import type { FarmerCropListing } from '../../types';
@@ -86,7 +86,7 @@ export default function BuyerCropSearchPage() {
     setPage(1);
   };
 
-  const crops = data?.crops ?? [];
+  const crops = data?.data ?? [];
   const totalPages = data?.totalPages ?? 1;
   const total = data?.total ?? 0;
 

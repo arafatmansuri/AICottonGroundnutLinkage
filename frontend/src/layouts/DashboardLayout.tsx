@@ -6,8 +6,8 @@ import {
   LayoutDashboard, TrendingUp, Wheat, Users, Briefcase,
   Star, Wallet, Bot, LogOut, Menu, X,
   Globe, ChevronDown, Leaf, UserCircle, Bell,
-  TrendingUp as PriceIcon, RefreshCw, DollarSign, Settings,
-  AlertTriangle, CheckCheck, ArrowRight,
+  TrendingUp as PriceIcon,
+  CheckCheck, ArrowRight,
 } from 'lucide-react';
 import type { RootState } from '../store';
 import { logout } from '../store/authSlice';
