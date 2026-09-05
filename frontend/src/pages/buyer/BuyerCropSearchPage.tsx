@@ -86,7 +86,7 @@ export default function BuyerCropSearchPage() {
     setPage(1);
   };
 
-  const crops = data?.data ?? [];
+  const crops = data?.crops ?? [];
   const totalPages = data?.totalPages ?? 1;
   const total = data?.total ?? 0;
 

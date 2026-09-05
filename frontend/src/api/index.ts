@@ -205,6 +205,14 @@ export interface CropSearchParams {
   limit?: number;
 }
 
+export interface CropSearchResponse {
+  crops: FarmerCropListing[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const buyerApi = {
   getProfile: (): AR<BuyerProfile> => api.get('/buyers/profile'),
   updateProfile: (data: BuyerProfileUpdateInput): AR<BuyerProfile> =>
@@ -216,7 +224,7 @@ export const buyerApi = {
   getMarketplace: (params: MarketPricesParams & PaginationParams): AR<PaginatedResponse<BuyerOffer>> =>
     api.get('/buyers/marketplace', { params }),
   // Buyer-specific crop search + interest
-  searchCrops: (params: CropSearchParams): AR<PaginatedResponse<FarmerCropListing>> =>
+  searchCrops: (params: CropSearchParams): AR<CropSearchResponse> =>
     api.get('/buyers/crops/search', { params }),
   sendInterest: (farmerCropId: string, message?: string): AR<CropInterestRecord> =>
     api.post(`/buyers/crops/${farmerCropId}/interest`, { message }),
